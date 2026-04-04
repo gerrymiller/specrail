@@ -1,0 +1,50 @@
+# === Node / pnpm ===
+node_modules/
+.pnpm-store/
+.pnpm-debug.log
+
+# === Build artifacts ===
+dist/
+*.tsbuildinfo
+
+# === Specrail runtime state (NEVER commit generated bundles) ===
+.specrail/
+*.generated.json
+*.bundle.json
+
+# === Turbo ===
+.turbo/
+
+# === Test / coverage ===
+coverage/
+.nyc_output/
+
+# === Environment / secrets ===
+.env
+.env.*
+!.env.example
+credentials/
+*.pem
+*.key
+*.cert
+
+# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === Temp ===
+tmp/
+temp/
+*.log
+
+# === Misc ===
+*.tgz
+.cache/

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://specrail.dev/schemas/policy-overlay-v1.json",
+  "version": "1.0",
+  "name": "default",
+  "description": "Default policy: reads allowed, writes denied",
+  "rules": [
+    {
+      "match": { "classification": ["write", "delete", "admin"] },
+      "effect": "deny",
+      "reason": "Write operations denied by default policy"
+    },
+    {
+      "match": { "classification": ["read", "action"] },
+      "effect": "allow"
+    }
+  ],
+  "defaults": {
+    "sensitivity": "internal",
+    "requiresApproval": false,
+    "exportVisible": true
+  }
+}
