@@ -73,17 +73,17 @@ chore(deps): bump vitest to 3.1
 
 ## Key Files
 
-| Path | Purpose |
-|------|---------|
-| `packages/core/src/` | Canonical model, Zod schemas, shared types |
-| `packages/ingest/src/` | OpenAPI parser, doc fetcher, normalizer |
-| `packages/policy/src/` | Policy engine, operation classifier |
-| `packages/cache/src/` | Two-tier cache (local + global) |
-| `packages/runtime/src/` | Direct API execution through policy gate |
-| `packages/export/src/` | MCP + SKILLS.md generators |
-| `packages/cli/src/` | CLI entry point and commands |
-| `fixtures/specs/` | Test OpenAPI specs |
-| `fixtures/policies/` | Test policy overlays |
+| Path                    | Purpose                                    |
+| ----------------------- | ------------------------------------------ |
+| `packages/core/src/`    | Canonical model, Zod schemas, shared types |
+| `packages/ingest/src/`  | OpenAPI parser, doc fetcher, normalizer    |
+| `packages/policy/src/`  | Policy engine, operation classifier        |
+| `packages/cache/src/`   | Two-tier cache (local + global)            |
+| `packages/runtime/src/` | Direct API execution through policy gate   |
+| `packages/export/src/`  | MCP + SKILLS.md generators                 |
+| `packages/cli/src/`     | CLI entry point and commands               |
+| `fixtures/specs/`       | Test OpenAPI specs                         |
+| `fixtures/policies/`    | Test policy overlays                       |
 
 ## Deep Documentation
 

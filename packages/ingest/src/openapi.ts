@@ -52,13 +52,18 @@ export async function parseOpenApiSpec(specPathOrUrl: string): Promise<ParseResu
 
     const methods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'] as const;
     for (const method of methods) {
-      const op = (pathItem as Record<string, unknown>)[method] as OpenAPIV3.OperationObject | undefined;
+      const op = (pathItem as Record<string, unknown>)[method] as
+        | OpenAPIV3.OperationObject
+        | undefined;
       if (!op) continue;
 
-      const parameters = extractParameters(
-        [...((pathItem as OpenAPIV3.PathItemObject).parameters ?? []), ...(op.parameters ?? [])],
+      const parameters = extractParameters([
+        ...((pathItem as OpenAPIV3.PathItemObject).parameters ?? []),
+        ...(op.parameters ?? []),
+      ]);
+      const requestBody = extractRequestBody(
+        op.requestBody as OpenAPIV3.RequestBodyObject | undefined,
       );
-      const requestBody = extractRequestBody(op.requestBody as OpenAPIV3.RequestBodyObject | undefined);
       const responses = extractResponses(op.responses as OpenAPIV3.ResponsesObject | undefined);
       const auth = resolveAuth(op.security ?? api.security, securitySchemes);
 
@@ -108,7 +113,9 @@ function extractSecuritySchemes(
   return result;
 }
 
-function extractParameters(params: (OpenAPIV3.ParameterObject | OpenAPIV3.ReferenceObject)[]): ParameterDef[] {
+function extractParameters(
+  params: (OpenAPIV3.ParameterObject | OpenAPIV3.ReferenceObject)[],
+): ParameterDef[] {
   return params
     .filter((p): p is OpenAPIV3.ParameterObject => 'name' in p)
     .map((p) => ({

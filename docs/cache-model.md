@@ -4,12 +4,13 @@ Generated capability bundles are ephemeral artifacts. They live in cache directo
 
 ## Two-Tier Cache
 
-| Tier | Location | Purpose |
-|------|----------|---------|
-| Local | `.specrail/` in project root | Per-project bundles and config |
+| Tier   | Location                             | Purpose                        |
+| ------ | ------------------------------------ | ------------------------------ |
+| Local  | `.specrail/` in project root         | Per-project bundles and config |
 | Global | `~/.cache/specrail/` (XDG-compliant) | Shared bundles across projects |
 
 The global cache path is determined by the `env-paths` library, which respects XDG base directory conventions:
+
 - Linux: `~/.cache/specrail/`
 - macOS: `~/Library/Caches/specrail/`
 - Windows: `%LOCALAPPDATA%/specrail/Cache/`

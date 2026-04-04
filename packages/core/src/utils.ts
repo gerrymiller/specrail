@@ -28,7 +28,11 @@ export function slugify(input: string): string {
 
 // Generate a human-readable name from an operationId or method+path.
 // "listPets" -> "List Pets", "get /pets/{id}" -> "Get Pets By Id"
-export function humanizeName(operationId: string | undefined, method: string, path: string): string {
+export function humanizeName(
+  operationId: string | undefined,
+  method: string,
+  path: string,
+): string {
   if (operationId) {
     return operationId
       .replace(/([A-Z])/g, ' $1')

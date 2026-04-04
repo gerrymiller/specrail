@@ -28,11 +28,11 @@ HTTP requests go to servers defined in the API spec. These are external systems 
 
 ### Env Var Convention
 
-| Auth Type | Variable |
-|-----------|----------|
-| API Key | `SPECRAIL_AUTH_APIKEY` |
-| Bearer Token | `SPECRAIL_AUTH_BEARER` |
-| Basic Auth | `SPECRAIL_AUTH_USER`, `SPECRAIL_AUTH_PASS` |
+| Auth Type    | Variable                                   |
+| ------------ | ------------------------------------------ |
+| API Key      | `SPECRAIL_AUTH_APIKEY`                     |
+| Bearer Token | `SPECRAIL_AUTH_BEARER`                     |
+| Basic Auth   | `SPECRAIL_AUTH_USER`, `SPECRAIL_AUTH_PASS` |
 
 Prefix is configurable via `--auth-env`.
 
@@ -49,12 +49,12 @@ The policy enforcer is the gatekeeper:
 
 Capabilities carry a sensitivity level that controls handling:
 
-| Level | Description |
-|-------|-------------|
-| `public` | Safe for broad exposure |
-| `internal` | Default. Standard handling. |
+| Level          | Description                              |
+| -------------- | ---------------------------------------- |
+| `public`       | Safe for broad exposure                  |
+| `internal`     | Default. Standard handling.              |
 | `confidential` | Restricted exposure. Consider redaction. |
-| `restricted` | Highly sensitive. May require approval. |
+| `restricted`   | Highly sensitive. May require approval.  |
 
 ## Redaction Framework
 

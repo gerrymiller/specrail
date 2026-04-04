@@ -39,19 +39,19 @@ If no rule matches, the capability is **denied** (fail-closed).
 
 All specified conditions in a rule must match (AND logic). Unspecified conditions are ignored.
 
-| Condition | Type | Description |
-|-----------|------|-------------|
+| Condition        | Type       | Description                                 |
+| ---------------- | ---------- | ------------------------------------------- |
 | `classification` | `string[]` | Match if capability's class is in this list |
-| `operationId` | `string` | Exact match on operationId |
-| `pathPattern` | `string` | Glob-like match on path (`*` = wildcard) |
-| `method` | `string` | Match on HTTP method (case-insensitive) |
+| `operationId`    | `string`   | Exact match on operationId                  |
+| `pathPattern`    | `string`   | Glob-like match on path (`*` = wildcard)    |
+| `method`         | `string`   | Match on HTTP method (case-insensitive)     |
 
 ### Effects
 
-| Effect | Description |
-|--------|-------------|
-| `allow` | Capability can be executed and exported |
-| `deny` | Capability cannot be executed. May still appear in exports. |
+| Effect  | Description                                                 |
+| ------- | ----------------------------------------------------------- |
+| `allow` | Capability can be executed and exported                     |
+| `deny`  | Capability cannot be executed. May still appear in exports. |
 
 ### Rule Overrides
 
@@ -65,12 +65,12 @@ Individual rules can override default values:
 
 The classifier maps HTTP methods to operation classes:
 
-| Method | Default Class | Notes |
-|--------|--------------|-------|
-| GET, HEAD, OPTIONS | `read` | Safe, no side effects |
-| POST | `write` | May be `action` for paths like `/send`, `/trigger` |
-| PUT, PATCH | `write` | Updates existing data |
-| DELETE | `delete` | Removes data |
+| Method             | Default Class | Notes                                              |
+| ------------------ | ------------- | -------------------------------------------------- |
+| GET, HEAD, OPTIONS | `read`        | Safe, no side effects                              |
+| POST               | `write`       | May be `action` for paths like `/send`, `/trigger` |
+| PUT, PATCH         | `write`       | Updates existing data                              |
+| DELETE             | `delete`      | Removes data                                       |
 
 `admin` and `action` require manual classification via policy rules.
 

@@ -12,7 +12,9 @@ const mcpCommand = new Command('mcp')
   .option('--allowed-only', 'Only export policy-allowed capabilities')
   .action(async (bundleName: string | undefined, options) => {
     if (!bundleName) {
-      console.error(chalk.red('Bundle name required. Use `specrail inspect` to list available bundles.'));
+      console.error(
+        chalk.red('Bundle name required. Use `specrail inspect` to list available bundles.'),
+      );
       process.exit(1);
     }
 
@@ -39,7 +41,9 @@ const skillsCommand = new Command('skills')
   .option('--output <path>', 'Output file path (default: stdout)')
   .action(async (bundleName: string | undefined, options) => {
     if (!bundleName) {
-      console.error(chalk.red('Bundle name required. Use `specrail inspect` to list available bundles.'));
+      console.error(
+        chalk.red('Bundle name required. Use `specrail inspect` to list available bundles.'),
+      );
       process.exit(1);
     }
 

@@ -9,6 +9,7 @@ Tools that take an OpenAPI spec and produce MCP tool definitions directly.
 **What they do well:** Fast path from spec to tools. Low ceremony.
 
 **What they miss:**
+
 - No governance layer. Every operation is exposed equally.
 - No policy model. Writes and deletes are as accessible as reads.
 - No classification. Agents cannot distinguish safe from destructive operations.
@@ -25,6 +26,7 @@ Custom MCP servers hand-built for specific APIs.
 **What they do well:** Full control over tool behavior, descriptions, and error handling.
 
 **What they miss:**
+
 - Bespoke per-API. Each server is a separate codebase.
 - No shared governance model. Policy is ad hoc per implementation.
 - Expensive to maintain. Every API change requires code changes.
@@ -39,6 +41,7 @@ Infrastructure-level API management platforms (Kong, Apigee, AWS API Gateway).
 **What they do well:** Rate limiting, auth, monitoring at infrastructure level.
 
 **What they miss:**
+
 - Not agent-aware. They manage HTTP traffic, not agent capabilities.
 - No capability model. They operate on routes, not semantic operations.
 - No export to agent formats (MCP, SKILLS).

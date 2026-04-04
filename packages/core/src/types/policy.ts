@@ -14,12 +14,7 @@ export type OperationClass = z.infer<typeof OperationClassSchema>;
 
 // Sensitivity level controls how carefully the capability should be handled.
 // Higher sensitivity = more restrictions on caching, logging, and export.
-export const SensitivityLevelSchema = z.enum([
-  'public',
-  'internal',
-  'confidential',
-  'restricted',
-]);
+export const SensitivityLevelSchema = z.enum(['public', 'internal', 'confidential', 'restricted']);
 export type SensitivityLevel = z.infer<typeof SensitivityLevelSchema>;
 
 // Redaction rules define fields that should be masked in logs, exports, or responses.

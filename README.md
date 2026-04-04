@@ -75,15 +75,15 @@ node packages/cli/dist/index.js export mcp petstore
 
 Specrail is a TypeScript monorepo with seven packages:
 
-| Package | Purpose |
-|---------|---------|
-| `@specrail/core` | Canonical capability model, shared types, Zod schemas |
-| `@specrail/ingest` | OpenAPI parsing, documentation fetching, normalization |
-| `@specrail/policy` | Policy overlay engine, operation classification, filtering |
-| `@specrail/cache` | Two-tier bundle cache (local + global), lookup, invalidation |
-| `@specrail/runtime` | Direct API execution through the policy gate |
-| `@specrail/export` | MCP tool definition + SKILLS.md generation |
-| `@specrail/cli` | CLI interface orchestrating all packages |
+| Package             | Purpose                                                      |
+| ------------------- | ------------------------------------------------------------ |
+| `@specrail/core`    | Canonical capability model, shared types, Zod schemas        |
+| `@specrail/ingest`  | OpenAPI parsing, documentation fetching, normalization       |
+| `@specrail/policy`  | Policy overlay engine, operation classification, filtering   |
+| `@specrail/cache`   | Two-tier bundle cache (local + global), lookup, invalidation |
+| `@specrail/runtime` | Direct API execution through the policy gate                 |
+| `@specrail/export`  | MCP tool definition + SKILLS.md generation                   |
+| `@specrail/cli`     | CLI interface orchestrating all packages                     |
 
 For a deep dive into architecture, data flow, and trust boundaries, see [docs/architecture.md](docs/architecture.md).
 
@@ -91,16 +91,16 @@ For a deep dive into architecture, data flow, and trust boundaries, see [docs/ar
 
 Specrail is not another OpenAPI-to-MCP generator. Here's what sets it apart:
 
-| Concern | Naive Generators | Specrail |
-|---------|-----------------|----------|
-| Operation filtering | None — expose everything | Policy overlays control every operation |
-| Write safety | Hope the agent behaves | Writes denied by default |
-| Operation classification | None | Every operation classified (read/write/delete/admin/action) |
-| Auth handling | Baked into config | Resolved from env vars at runtime, never cached |
-| Generated artifacts | Committed to repo, drift | Cached outside repo, regenerated from source |
-| Canonical model | Whatever the spec says | Normalized model decoupled from any spec format |
-| Documentation augmentation | None | Enrich capabilities with live docs |
-| Inspectability | Opaque | Bundles are human-readable JSON, always inspectable |
+| Concern                    | Naive Generators         | Specrail                                                    |
+| -------------------------- | ------------------------ | ----------------------------------------------------------- |
+| Operation filtering        | None — expose everything | Policy overlays control every operation                     |
+| Write safety               | Hope the agent behaves   | Writes denied by default                                    |
+| Operation classification   | None                     | Every operation classified (read/write/delete/admin/action) |
+| Auth handling              | Baked into config        | Resolved from env vars at runtime, never cached             |
+| Generated artifacts        | Committed to repo, drift | Cached outside repo, regenerated from source                |
+| Canonical model            | Whatever the spec says   | Normalized model decoupled from any spec format             |
+| Documentation augmentation | None                     | Enrich capabilities with live docs                          |
+| Inspectability             | Opaque                   | Bundles are human-readable JSON, always inspectable         |
 
 ## Key Design Decisions
 
@@ -137,17 +137,17 @@ See [docs/roadmap.md](docs/roadmap.md) for the full roadmap.
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Architecture](docs/architecture.md) | Package dependency graph, data flow, trust boundaries |
-| [Cache Model](docs/cache-model.md) | Two-tier cache design, directory structure, lookup order |
-| [Canonical Schema](docs/canonical-capability-schema.md) | Full schema reference for the capability model |
-| [Competitive Landscape](docs/competitive-landscape.md) | How Specrail compares to alternatives |
-| [Design Principles](docs/design-principles.md) | Core design principles and rationale |
-| [Execution Model](docs/execution-model.md) | How direct API execution works |
-| [Policy Overlays](docs/policy-overlays.md) | Policy system reference |
-| [Roadmap](docs/roadmap.md) | Project roadmap and versioning plan |
-| [Security Model](docs/security-model.md) | Security considerations and trust boundaries |
+| Document                                                | Description                                              |
+| ------------------------------------------------------- | -------------------------------------------------------- |
+| [Architecture](docs/architecture.md)                    | Package dependency graph, data flow, trust boundaries    |
+| [Cache Model](docs/cache-model.md)                      | Two-tier cache design, directory structure, lookup order |
+| [Canonical Schema](docs/canonical-capability-schema.md) | Full schema reference for the capability model           |
+| [Competitive Landscape](docs/competitive-landscape.md)  | How Specrail compares to alternatives                    |
+| [Design Principles](docs/design-principles.md)          | Core design principles and rationale                     |
+| [Execution Model](docs/execution-model.md)              | How direct API execution works                           |
+| [Policy Overlays](docs/policy-overlays.md)              | Policy system reference                                  |
+| [Roadmap](docs/roadmap.md)                              | Project roadmap and versioning plan                      |
+| [Security Model](docs/security-model.md)                | Security considerations and trust boundaries             |
 
 ## Contributing
 

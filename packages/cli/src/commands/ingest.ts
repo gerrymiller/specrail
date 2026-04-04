@@ -29,7 +29,9 @@ export const ingestCommand = new Command('ingest')
       // 1. Parse the OpenAPI spec
       const { source, operations } = await parseOpenApiSpec(spec);
       console.log(
-        chalk.green(`  Parsed ${operations.length} operations from "${source.title}" v${source.version}`),
+        chalk.green(
+          `  Parsed ${operations.length} operations from "${source.title}" v${source.version}`,
+        ),
       );
 
       // 2. Build augmentation (docs + Context7)
@@ -49,9 +51,7 @@ export const ingestCommand = new Command('ingest')
       }
 
       // 3. Load policy overlay
-      const overlay = options.policy
-        ? await loadOverlay(options.policy)
-        : DEFAULT_POLICY;
+      const overlay = options.policy ? await loadOverlay(options.policy) : DEFAULT_POLICY;
       console.log(chalk.green(`  Using policy: "${overlay.name}"`));
 
       // 4. Build capabilities with classification and policy enforcement

@@ -31,19 +31,19 @@ pnpm test:coverage
 
 ### Useful Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm build` | Build all packages via Turborepo |
-| `pnpm dev` | Start development mode (watch) |
-| `pnpm test` | Run all tests via Vitest |
-| `pnpm test:watch` | Run tests in watch mode |
-| `pnpm test:coverage` | Run tests with V8 coverage |
-| `pnpm lint` | Run ESLint across all packages |
-| `pnpm lint:fix` | Auto-fix lint issues |
-| `pnpm format` | Format with Prettier |
-| `pnpm format:check` | Check formatting without writing |
-| `pnpm typecheck` | Run TypeScript type checking |
-| `pnpm clean` | Remove all build artifacts and node_modules |
+| Command              | Description                                 |
+| -------------------- | ------------------------------------------- |
+| `pnpm build`         | Build all packages via Turborepo            |
+| `pnpm dev`           | Start development mode (watch)              |
+| `pnpm test`          | Run all tests via Vitest                    |
+| `pnpm test:watch`    | Run tests in watch mode                     |
+| `pnpm test:coverage` | Run tests with V8 coverage                  |
+| `pnpm lint`          | Run ESLint across all packages              |
+| `pnpm lint:fix`      | Auto-fix lint issues                        |
+| `pnpm format`        | Format with Prettier                        |
+| `pnpm format:check`  | Check formatting without writing            |
+| `pnpm typecheck`     | Run TypeScript type checking                |
+| `pnpm clean`         | Remove all build artifacts and node_modules |
 
 ## Project Structure
 
@@ -68,13 +68,13 @@ specrail/
 
 This project follows gitflow. All work happens on branches off `develop`:
 
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `feature/` | New features and enhancements | `feature/add-openapi-3.1-support` |
-| `bugfix/` | Bug fixes during development | `bugfix/fix-policy-rule-matching` |
-| `chore/` | Maintenance, deps, refactoring | `chore/update-vitest` |
-| `hotfix/` | Critical production fixes (from `main`) | `hotfix/fix-cache-corruption` |
-| `release/` | Release preparation | `release/v0.2.0` |
+| Prefix     | Purpose                                 | Example                           |
+| ---------- | --------------------------------------- | --------------------------------- |
+| `feature/` | New features and enhancements           | `feature/add-openapi-3.1-support` |
+| `bugfix/`  | Bug fixes during development            | `bugfix/fix-policy-rule-matching` |
+| `chore/`   | Maintenance, deps, refactoring          | `chore/update-vitest`             |
+| `hotfix/`  | Critical production fixes (from `main`) | `hotfix/fix-cache-corruption`     |
+| `release/` | Release preparation                     | `release/v0.2.0`                  |
 
 **Never commit directly to `main`.**
 

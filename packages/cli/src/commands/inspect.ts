@@ -19,7 +19,9 @@ export const inspectCommand = new Command('inspect')
         }
         console.log(chalk.bold('Cached bundles:'));
         for (const meta of bundles) {
-          console.log(`  ${chalk.cyan(meta.bundleName)} - ${meta.capabilityCount} capabilities (${meta.generatedAt})`);
+          console.log(
+            `  ${chalk.cyan(meta.bundleName)} - ${meta.capabilityCount} capabilities (${meta.generatedAt})`,
+          );
         }
         return;
       }
@@ -69,9 +71,13 @@ export const inspectCommand = new Command('inspect')
       console.log(`  Generated:    ${bundle.generatedAt}`);
       console.log(`  Hash:         ${bundle.bundleHash.slice(0, 16)}...`);
       console.log(`  Policy:       ${bundle.policy.overlayName}`);
-      console.log(`  Capabilities: ${bundle.policy.totalCapabilities} (${chalk.green(String(bundle.policy.allowedCount))} allowed, ${chalk.red(String(bundle.policy.deniedCount))} denied)`);
+      console.log(
+        `  Capabilities: ${bundle.policy.totalCapabilities} (${chalk.green(String(bundle.policy.allowedCount))} allowed, ${chalk.red(String(bundle.policy.deniedCount))} denied)`,
+      );
       console.log('');
-      console.log(chalk.dim('  Use --json for full bundle, --capabilities for list, --policy for decisions'));
+      console.log(
+        chalk.dim('  Use --json for full bundle, --capabilities for list, --policy for decisions'),
+      );
     } catch (error) {
       console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
       process.exit(1);

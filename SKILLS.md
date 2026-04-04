@@ -6,13 +6,17 @@
 ## Read Operations
 
 ### List Pets (read)
+
 List all pets in the store.
+
 - **Method:** GET /pets
 - **Parameters:** limit (integer, optional)
 - **Auth:** API Key (header: X-API-Key)
 
 ### Get Pet By Id (read)
+
 Get a single pet by its ID.
+
 - **Method:** GET /pets/{petId}
 - **Parameters:** petId (string, required)
 - **Auth:** API Key (header: X-API-Key)
@@ -20,7 +24,9 @@ Get a single pet by its ID.
 ## Write Operations
 
 ### Create Pet (write) [DENIED BY POLICY]
+
 Create a new pet in the store.
+
 - **Method:** POST /pets
 - **Auth:** API Key (header: X-API-Key)
 - **Status:** Denied -- Write operations denied by default policy
@@ -28,7 +34,9 @@ Create a new pet in the store.
 ## Delete Operations
 
 ### Delete Pet (delete) [DENIED BY POLICY]
+
 Delete a pet from the store.
+
 - **Method:** DELETE /pets/{petId}
 - **Parameters:** petId (string, required)
 - **Auth:** API Key (header: X-API-Key)
@@ -36,4 +44,4 @@ Delete a pet from the store.
 
 ---
 
-*This is an example of Specrail's SKILLS export format. Generate your own with `specrail export skills <bundle-name>`.*
+_This is an example of Specrail's SKILLS export format. Generate your own with `specrail export skills <bundle-name>`._

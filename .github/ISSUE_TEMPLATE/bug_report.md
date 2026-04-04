@@ -1,9 +1,9 @@
 ---
 name: Bug Report
 about: Report a bug in Specrail
-title: "[BUG] "
+title: '[BUG] '
 labels: bug
-assignees: ""
+assignees: ''
 ---
 
 ## Describe the Bug

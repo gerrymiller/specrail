@@ -19,12 +19,12 @@ This is a hard gate, not a warning. Denied operations throw an error and the HTT
 
 Credentials are resolved from environment variables at execution time:
 
-| Auth Type | Env Var | Header/Param |
-|-----------|---------|--------------|
-| API Key | `{PREFIX}_APIKEY` | Header or query (per spec) |
-| Bearer | `{PREFIX}_BEARER` | `Authorization: Bearer {token}` |
-| Basic | `{PREFIX}_USER` + `{PREFIX}_PASS` | `Authorization: Basic {base64}` |
-| OAuth2 | `{PREFIX}_BEARER` (MVP) | `Authorization: Bearer {token}` |
+| Auth Type | Env Var                           | Header/Param                    |
+| --------- | --------------------------------- | ------------------------------- |
+| API Key   | `{PREFIX}_APIKEY`                 | Header or query (per spec)      |
+| Bearer    | `{PREFIX}_BEARER`                 | `Authorization: Bearer {token}` |
+| Basic     | `{PREFIX}_USER` + `{PREFIX}_PASS` | `Authorization: Basic {base64}` |
+| OAuth2    | `{PREFIX}_BEARER` (MVP)           | `Authorization: Bearer {token}` |
 
 Default prefix: `SPECRAIL_AUTH`. Override with `--auth-env`.
 

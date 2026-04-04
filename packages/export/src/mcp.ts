@@ -49,8 +49,13 @@ export function exportMcp(
 }
 
 function capabilityToMcpTool(cap: Capability, sourceTitle: string): McpToolDefinition {
-  const slug = sourceTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-  const opName = cap.operationId ?? `${cap.operation.method}_${cap.operation.path.replace(/\//g, '_').replace(/[{}]/g, '').replace(/^_/, '')}`;
+  const slug = sourceTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
+  const opName =
+    cap.operationId ??
+    `${cap.operation.method}_${cap.operation.path.replace(/\//g, '_').replace(/[{}]/g, '').replace(/^_/, '')}`;
   const name = `${slug}_${opName}`;
 
   // Build description with policy context
@@ -80,7 +85,9 @@ function capabilityToMcpTool(cap: Capability, sourceTitle: string): McpToolDefin
   if (cap.operation.requestBody?.content['application/json']) {
     const bodySchema = cap.operation.requestBody.content['application/json'];
     if (bodySchema && typeof bodySchema === 'object' && 'properties' in bodySchema) {
-      const bodyProps = (bodySchema as Record<string, unknown>).properties as Record<string, unknown> | undefined;
+      const bodyProps = (bodySchema as Record<string, unknown>).properties as
+        | Record<string, unknown>
+        | undefined;
       if (bodyProps) {
         Object.assign(properties, bodyProps);
       }

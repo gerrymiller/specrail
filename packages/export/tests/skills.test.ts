@@ -362,11 +362,13 @@ describe('exportSkills - auth type formatting', () => {
   });
 
   it('formats oauth2 auth with scopes', () => {
-    const cap = makeCapWithAuth([{
-      type: 'oauth2',
-      tokenUrl: 'https://auth.example.com/token',
-      scopes: ['read:data', 'write:data'],
-    }]);
+    const cap = makeCapWithAuth([
+      {
+        type: 'oauth2',
+        tokenUrl: 'https://auth.example.com/token',
+        scopes: ['read:data', 'write:data'],
+      },
+    ]);
     const markdown = exportSkills(makeBundle([cap]));
     expect(markdown).toContain('OAuth2');
     expect(markdown).toContain('read:data');
@@ -374,11 +376,13 @@ describe('exportSkills - auth type formatting', () => {
   });
 
   it('formats oauth2 auth without scopes', () => {
-    const cap = makeCapWithAuth([{
-      type: 'oauth2',
-      tokenUrl: 'https://auth.example.com/token',
-      scopes: [],
-    }]);
+    const cap = makeCapWithAuth([
+      {
+        type: 'oauth2',
+        tokenUrl: 'https://auth.example.com/token',
+        scopes: [],
+      },
+    ]);
     const markdown = exportSkills(makeBundle([cap]));
     expect(markdown).toContain('OAuth2');
     expect(markdown).not.toContain('scopes:');

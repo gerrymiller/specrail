@@ -1,0 +1,12 @@
+# Machine-generated files
+pnpm-lock.yaml
+*.lock
+
+# Build artifacts
+dist/
+coverage/
+.turbo/
+.specrail/
+
+# Node modules
+node_modules/

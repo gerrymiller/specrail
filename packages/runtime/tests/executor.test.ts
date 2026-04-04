@@ -255,7 +255,11 @@ describe('execute (with mocked fetch)', () => {
   });
 
   it('sends body params for POST operations', async () => {
-    const mockResponse = makeFetchResponse({ status: 201, contentType: 'application/json', json: { id: 1, name: 'Fido' } });
+    const mockResponse = makeFetchResponse({
+      status: 201,
+      contentType: 'application/json',
+      json: { id: 1, name: 'Fido' },
+    });
     const fetchSpy = vi.fn().mockResolvedValue(mockResponse);
     vi.stubGlobal('fetch', fetchSpy);
 
@@ -268,7 +272,9 @@ describe('execute (with mocked fetch)', () => {
         parameters: [],
         requestBody: {
           required: true,
-          content: { 'application/json': { type: 'object', properties: { name: { type: 'string' } } } },
+          content: {
+            'application/json': { type: 'object', properties: { name: { type: 'string' } } },
+          },
         },
         responses: { '201': { description: 'Created' } },
       },
@@ -291,7 +297,11 @@ describe('execute (with mocked fetch)', () => {
 
   it('applies auth header when resolved from env', async () => {
     process.env['SPECRAIL_AUTH_APIKEY'] = 'test-api-key';
-    const mockResponse = makeFetchResponse({ status: 200, contentType: 'application/json', json: {} });
+    const mockResponse = makeFetchResponse({
+      status: 200,
+      contentType: 'application/json',
+      json: {},
+    });
     const fetchSpy = vi.fn().mockResolvedValue(mockResponse);
     vi.stubGlobal('fetch', fetchSpy);
 
@@ -379,7 +389,11 @@ describe('execute (with mocked fetch)', () => {
 
   it('applies api-key auth in query param location to URL', async () => {
     process.env['SPECRAIL_AUTH_APIKEY'] = 'query-api-key';
-    const mockResponse = makeFetchResponse({ status: 200, contentType: 'application/json', json: {} });
+    const mockResponse = makeFetchResponse({
+      status: 200,
+      contentType: 'application/json',
+      json: {},
+    });
     const fetchSpy = vi.fn().mockResolvedValue(mockResponse);
     vi.stubGlobal('fetch', fetchSpy);
 
@@ -393,7 +407,11 @@ describe('execute (with mocked fetch)', () => {
   });
 
   it('sends header parameter from params', async () => {
-    const mockResponse = makeFetchResponse({ status: 200, contentType: 'application/json', json: {} });
+    const mockResponse = makeFetchResponse({
+      status: 200,
+      contentType: 'application/json',
+      json: {},
+    });
     const fetchSpy = vi.fn().mockResolvedValue(mockResponse);
     vi.stubGlobal('fetch', fetchSpy);
 
@@ -402,9 +420,7 @@ describe('execute (with mocked fetch)', () => {
         method: 'get',
         path: '/pets',
         servers: ['https://petstore.example.com/v1'],
-        parameters: [
-          { name: 'X-Trace-Id', location: 'header', required: false },
-        ],
+        parameters: [{ name: 'X-Trace-Id', location: 'header', required: false }],
         responses: { '200': { description: 'OK' } },
       },
     });
