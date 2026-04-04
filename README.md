@@ -1,12 +1,16 @@
-# Specrail
+<p align="center">
+  <img src="assets/logo.png" alt="Specrail" width="600">
+</p>
 
-[![CI](https://github.com/gerrymiller/specrail/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gerrymiller/specrail/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node ≥20](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)](https://nodejs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![pnpm](https://img.shields.io/badge/pnpm-9-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
+<p align="center">
+  <a href="https://github.com/gerrymiller/specrail/actions/workflows/ci.yml"><img src="https://github.com/gerrymiller/specrail/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%E2%89%A520-brightgreen" alt="Node ≥20"></a>
+  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript"></a>
+  <a href="https://pnpm.io"><img src="https://img.shields.io/badge/pnpm-9-F69220?logo=pnpm&logoColor=white" alt="pnpm"></a>
+</p>
 
-**Turn API specs and docs into governed capabilities for agents.**
+<p align="center"><strong>Turn API specs and docs into governed capabilities for agents.</strong></p>
 
 ---
 

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="nodeGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="16"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#111827"/>
+
+  <!-- Subtle horizontal track lines (full width) -->
+  <g stroke="#1F2937" stroke-width="0.5" opacity="0.3">
+    <line x1="0" y1="180" x2="1200" y2="180"/>
+    <line x1="0" y1="240" x2="1200" y2="240"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="0" y1="360" x2="1200" y2="360"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+  </g>
+
+  <!-- Large centered mark -->
+  <!-- Input rails -->
+  <path d="M 200,220 C 310,220 360,272 440,290" stroke="#6B7280" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,310 L 440,310" stroke="#6B7280" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  <path d="M 200,400 C 310,400 360,348 440,330" stroke="#6B7280" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Node ambient glow -->
+  <circle cx="460" cy="310" r="40" fill="#F59E0B" opacity="0.06" filter="url(#nodeGlow)"/>
+
+  <!-- Allowed output -->
+  <path d="M 480,298 C 550,272 650,240 740,220" stroke="#38BDF8" stroke-width="7" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+  <polygon points="740,220 722,212 724,230" fill="#38BDF8"/>
+  <circle cx="740" cy="220" r="5" fill="#38BDF8"/>
+
+  <!-- Denied output -->
+  <path d="M 480,322 C 550,348 650,380 740,400" stroke="#4B5563" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="10,7"/>
+  <circle cx="740" cy="400" r="3.5" fill="#4B5563" opacity="0.7"/>
+
+  <!-- Decision node -->
+  <circle cx="460" cy="310" r="20" fill="#F59E0B"/>
+  <circle cx="460" cy="310" r="12.5" fill="#111827"/>
+  <circle cx="460" cy="310" r="6.5" fill="#F59E0B"/>
+
+  <!-- Wordmark to the right of the mark -->
+  <text x="790" y="300" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="72" font-weight="600" letter-spacing="-1">
+    <tspan fill="#F9FAFB">spec</tspan><tspan fill="#38BDF8">rail</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="792" y="340" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="400" fill="#6B7280" letter-spacing="0.5">
+    Runtime capability broker for agents
+  </text>
+
+  <!-- Bottom URL -->
+  <text x="600" y="580" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="400" fill="#4B5563" letter-spacing="1">
+    github.com/gerrymiller/specrail
+  </text>
+</svg>
