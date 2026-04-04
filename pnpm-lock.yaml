@@ -39,6 +39,40 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/node@25.5.2)(yaml@2.8.3)
 
+  packages/broker:
+    dependencies:
+      '@specrail/cache':
+        specifier: workspace:*
+        version: link:../cache
+      '@specrail/core':
+        specifier: workspace:*
+        version: link:../core
+      '@specrail/export':
+        specifier: workspace:*
+        version: link:../export
+      '@specrail/ingest':
+        specifier: workspace:*
+        version: link:../ingest
+      '@specrail/policy':
+        specifier: workspace:*
+        version: link:../policy
+      '@specrail/resolver':
+        specifier: workspace:*
+        version: link:../resolver
+      '@specrail/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+    devDependencies:
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.8)(typescript@5.9.3)(yaml@2.8.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.5.2)(yaml@2.8.3)
+
   packages/cache:
     dependencies:
       '@specrail/core':
@@ -160,6 +194,25 @@ importers:
       '@specrail/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.8)(typescript@5.9.3)(yaml@2.8.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.0
+        version: 3.2.4(@types/node@25.5.2)(yaml@2.8.3)
+
+  packages/resolver:
+    dependencies:
+      '@specrail/core':
+        specifier: workspace:*
+        version: link:../core
+      env-paths:
+        specifier: ^3.0.0
+        version: 3.0.0
     devDependencies:
       tsup:
         specifier: ^8.4.0

@@ -9,4 +9,12 @@
 // no opaque databases. `cat .specrail/bundles/petstore/bundle.json` works.
 
 export { getLocalCachePath, getGlobalCachePath, getBundlePath } from './paths.js';
-export { writeBundle, readBundle, listBundles, cleanCache, type BundleMeta } from './store.js';
+export {
+  writeBundle,
+  readBundle,
+  readMeta,
+  writeMeta,
+  listBundles,
+  cleanCache,
+  type BundleMeta,
+} from './store.js';

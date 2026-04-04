@@ -13,21 +13,21 @@ export async function loadOverlay(filePath: string): Promise<PolicyOverlay> {
   return PolicyOverlaySchema.parse(parsed);
 }
 
-// The built-in default policy: reads and actions allowed, everything else denied.
-// This is the safety net -- if no overlay is provided, writes cannot execute.
+// The built-in default policy: reads only. All side-effecting operations denied.
+// This is the safety net -- if no overlay is provided, only reads can execute.
 export const DEFAULT_POLICY: PolicyOverlay = {
   version: '1.0',
-  name: 'default',
-  description: 'Default policy: reads allowed, writes denied',
+  name: 'specrail-default',
+  description: 'Built-in default: reads only. All side-effecting operations denied.',
   rules: [
     {
-      match: { classification: ['write', 'delete', 'admin'] },
-      effect: 'deny',
-      reason: 'Write operations denied by default policy',
+      match: { classification: ['read'] },
+      effect: 'allow',
     },
     {
-      match: { classification: ['read', 'action'] },
-      effect: 'allow',
+      match: { classification: ['write', 'delete', 'admin', 'action'] },
+      effect: 'deny',
+      reason: 'Side-effecting operations denied by default policy',
     },
   ],
   defaults: {

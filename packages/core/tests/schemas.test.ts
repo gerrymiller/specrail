@@ -4,6 +4,10 @@ import {
   PolicyOverlaySchema,
   CapabilitySchema,
   AuthRequirementSchema,
+  ProviderConfigSchema,
+  ProviderRegistrySchema,
+  BundleMetaSchema,
+  ResolvedProviderSchema,
 } from '../src/types/index.js';
 
 // Minimal valid fixtures used across tests
@@ -263,5 +267,123 @@ describe('AuthRequirementSchema', () => {
     const auth = { type: 'api-key', name: 'api_key', location: 'query' };
     const result = AuthRequirementSchema.safeParse(auth);
     expect(result.success).toBe(true);
+  });
+});
+
+describe('ProviderConfigSchema', () => {
+  it('validates a minimal provider config', () => {
+    const result = ProviderConfigSchema.safeParse({ specUrl: 'https://example.com/spec.json' });
+    expect(result.success).toBe(true);
+  });
+
+  it('validates a full provider config', () => {
+    const result = ProviderConfigSchema.safeParse({
+      specUrl: 'https://example.com/spec.json',
+      docsUrl: 'https://example.com/docs',
+      context7Library: 'example-lib',
+      authEnvPrefix: 'EXAMPLE',
+      policyOverlay: './policies/example.json',
+      ttl: 3600,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects config without specUrl', () => {
+    const result = ProviderConfigSchema.safeParse({ docsUrl: 'https://example.com/docs' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects negative ttl', () => {
+    const result = ProviderConfigSchema.safeParse({ specUrl: 'https://x.com/s.json', ttl: -1 });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('ProviderRegistrySchema', () => {
+  it('validates an empty registry', () => {
+    const result = ProviderRegistrySchema.safeParse({ version: '1.0', providers: {} });
+    expect(result.success).toBe(true);
+  });
+
+  it('validates a registry with providers', () => {
+    const result = ProviderRegistrySchema.safeParse({
+      version: '1.0',
+      providers: {
+        petstore: { specUrl: 'https://petstore.com/spec.json' },
+        stripe: { specUrl: 'https://stripe.com/spec.json', ttl: 86400 },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects wrong version', () => {
+    const result = ProviderRegistrySchema.safeParse({ version: '2.0', providers: {} });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('BundleMetaSchema', () => {
+  it('validates legacy meta (no freshness fields)', () => {
+    const result = BundleMetaSchema.safeParse({
+      bundleName: 'test',
+      generatedAt: '2025-01-01T00:00:00Z',
+      bundleHash: 'abc123',
+      specUrl: 'https://example.com/spec.json',
+      capabilityCount: 5,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('validates extended meta with freshness fields', () => {
+    const result = BundleMetaSchema.safeParse({
+      bundleName: 'test',
+      generatedAt: '2025-01-01T00:00:00Z',
+      bundleHash: 'abc123',
+      specUrl: 'https://example.com/spec.json',
+      capabilityCount: 5,
+      provider: 'test-provider',
+      specHash: 'sha256hash',
+      specVersion: '1.0.0',
+      specETag: '"etag123"',
+      specLastModified: 'Mon, 01 Jan 2025 00:00:00 GMT',
+      policyHash: 'policyhash',
+      generatorVersion: '0.2.0',
+      expiresAt: '2025-01-02T00:00:00Z',
+      docsExpiresAt: '2025-01-02T00:00:00Z',
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('ResolvedProviderSchema', () => {
+  it('validates a URL-resolved provider', () => {
+    const result = ResolvedProviderSchema.safeParse({
+      name: 'test',
+      specUrl: 'https://example.com/spec.json',
+      resolvedVia: 'url',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('validates a registry-resolved provider with all fields', () => {
+    const result = ResolvedProviderSchema.safeParse({
+      name: 'stripe',
+      specUrl: 'https://stripe.com/spec.json',
+      docsUrl: 'https://stripe.com/docs',
+      authEnvPrefix: 'STRIPE',
+      policyOverlay: './stripe-policy.json',
+      ttl: 86400,
+      resolvedVia: 'registry',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects invalid resolvedVia value', () => {
+    const result = ResolvedProviderSchema.safeParse({
+      name: 'test',
+      specUrl: 'https://example.com/spec.json',
+      resolvedVia: 'magic',
+    });
+    expect(result.success).toBe(false);
   });
 });

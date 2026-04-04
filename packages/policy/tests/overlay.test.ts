@@ -93,7 +93,7 @@ describe('loadOverlay', () => {
 
 describe('DEFAULT_POLICY', () => {
   it('has the correct name', () => {
-    expect(DEFAULT_POLICY.name).toBe('default');
+    expect(DEFAULT_POLICY.name).toBe('specrail-default');
   });
 
   it('has version 1.0', () => {

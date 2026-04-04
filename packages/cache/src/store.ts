@@ -1,16 +1,15 @@
 import { mkdir, writeFile, readFile, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { type CapabilityBundle, CapabilityBundleSchema } from '@specrail/core';
+import {
+  type CapabilityBundle,
+  type BundleMeta,
+  CapabilityBundleSchema,
+  BundleMetaSchema,
+} from '@specrail/core';
 import { getBundlePath, getLocalCachePath, getGlobalCachePath } from './paths.js';
 
-// Metadata written alongside each bundle for cache management
-export interface BundleMeta {
-  bundleName: string;
-  generatedAt: string;
-  bundleHash: string;
-  specUrl: string;
-  capabilityCount: number;
-}
+// Re-export BundleMeta from core for backward compatibility
+export type { BundleMeta } from '@specrail/core';
 
 // Write a capability bundle to the local cache.
 // Creates the cache directory structure if it doesn't exist.
@@ -20,7 +19,7 @@ export interface BundleMeta {
 export async function writeBundle(
   bundle: CapabilityBundle,
   bundleName: string,
-  options?: { cacheDir?: string },
+  options?: { cacheDir?: string; metaOverrides?: Partial<BundleMeta> },
 ): Promise<string> {
   const cacheRoot = options?.cacheDir ?? getLocalCachePath();
   const bundleDir = getBundlePath(cacheRoot, bundleName);
@@ -31,13 +30,15 @@ export async function writeBundle(
   const bundleJson = JSON.stringify(bundle, null, 2);
   await writeFile(join(bundleDir, 'bundle.json'), bundleJson, 'utf-8');
 
-  // Write lightweight metadata for listing and quick lookups
+  // Write lightweight metadata for listing and quick lookups.
+  // metaOverrides supplies freshness fields from the broker.
   const meta: BundleMeta = {
     bundleName,
     generatedAt: bundle.generatedAt,
     bundleHash: bundle.bundleHash,
     specUrl: bundle.source.specUrl,
     capabilityCount: bundle.capabilities.length,
+    ...options?.metaOverrides,
   };
   await writeFile(join(bundleDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf-8');
 
@@ -100,6 +101,41 @@ export async function listBundles(options?: { cacheDir?: string }): Promise<Bund
   }
 
   return results;
+}
+
+// Read just the meta.json for a bundle (cheap freshness check without loading full bundle).
+export async function readMeta(
+  bundleName: string,
+  options?: { cacheDir?: string },
+): Promise<BundleMeta | null> {
+  const searchDirs = options?.cacheDir
+    ? [options.cacheDir]
+    : [getLocalCachePath(), getGlobalCachePath()];
+
+  for (const cacheRoot of searchDirs) {
+    const metaPath = join(getBundlePath(cacheRoot, bundleName), 'meta.json');
+    try {
+      const raw = await readFile(metaPath, 'utf-8');
+      const parsed = JSON.parse(raw);
+      return BundleMetaSchema.parse(parsed);
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}
+
+// Update only the meta.json for a bundle (e.g. to touch expiresAt after a HEAD check).
+export async function writeMeta(
+  bundleName: string,
+  meta: BundleMeta,
+  options?: { cacheDir?: string },
+): Promise<void> {
+  const cacheRoot = options?.cacheDir ?? getLocalCachePath();
+  const bundleDir = getBundlePath(cacheRoot, bundleName);
+  await mkdir(bundleDir, { recursive: true });
+  await writeFile(join(bundleDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf-8');
 }
 
 // Remove all cached bundles from local cache.
