@@ -1,44 +1,20 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { readBundle } from '@specrail/cache';
-import { execute, PolicyDeniedError } from '@specrail/runtime';
+import { execute as brokerExecute } from '@specrail/broker';
+import { PolicyDeniedError } from '@specrail/runtime';
 
 export const execCommand = new Command('exec')
-  .description('Execute a capability directly against the target API')
-  .argument('<capability-id>', 'Capability ID (e.g., petstore:listPets)')
+  .description('Execute a capability against the target API (ensures bundle is current)')
+  .argument('<provider>', 'Provider name, spec URL, or file path')
+  .argument('<capability>', 'Capability name (e.g., listPets)')
   .option('--params <json>', 'Parameters as JSON string')
-  .option('--auth-env <prefix>', 'Env var prefix for auth credentials', 'SPECRAIL_AUTH')
+  .option('--auth-env <prefix>', 'Env var prefix for auth credentials')
   .option('--dry-run', 'Show the request without executing')
-  .action(async (capabilityId: string, options) => {
+  .action(async (provider: string, capabilityId: string, options) => {
     try {
-      // Parse capability ID into bundle name and operation
-      const [bundleName, ...rest] = capabilityId.split(':');
-      const opId = rest.join(':');
-
-      if (!bundleName || !opId) {
-        console.error(chalk.red('Invalid capability ID format. Expected: bundleName:operationId'));
-        process.exit(1);
-      }
-
-      const bundle = await readBundle(bundleName);
-      if (!bundle) {
-        console.error(chalk.red(`Bundle "${bundleName}" not found.`));
-        process.exit(1);
-      }
-
-      const capability = bundle.capabilities.find((c) => c.id === capabilityId);
-      if (!capability) {
-        console.error(chalk.red(`Capability "${capabilityId}" not found in bundle.`));
-        console.log(chalk.dim('Available capabilities:'));
-        for (const cap of bundle.capabilities) {
-          console.log(chalk.dim(`  ${cap.id}`));
-        }
-        process.exit(1);
-      }
-
       const params = options.params ? JSON.parse(options.params) : {};
 
-      const result = await execute(capability, {
+      const result = await brokerExecute(provider, capabilityId, {
         params,
         authEnvPrefix: options.authEnv,
         dryRun: options.dryRun,

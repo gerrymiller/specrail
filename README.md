@@ -85,19 +85,17 @@ node packages/cli/dist/index.js provider add petstore \
 node packages/cli/dist/index.js refresh petstore
 ```
 
-### MCP Server
+### Manual Ingest (Escape Hatch)
 
-Agents connect to Specrail as an MCP server with 5 broker-level tools:
+For one-off specs that don't need a registry entry:
 
-```json
-{
-  "mcpServers": {
-    "specrail": { "command": "specrail", "args": ["serve"] }
-  }
-}
+```bash
+node packages/cli/dist/index.js ingest ./local-spec.yaml --name myapi
 ```
 
-See [docs/mcp-strategy.md](docs/mcp-strategy.md) for tool definitions.
+### MCP Server (Phase 2B — not yet implemented)
+
+The plan is for agents to connect to Specrail as an MCP server with 5 broker-level tools. See [docs/mcp-strategy.md](docs/mcp-strategy.md) for the design.
 
 ## Architecture
 
@@ -113,7 +111,7 @@ Specrail is a TypeScript monorepo with nine packages:
 | `@specrail/runtime`  | Direct API execution through the policy gate               |
 | `@specrail/export`   | MCP tool definitions + SKILLS.md generation                |
 | `@specrail/broker`   | Runtime orchestration: resolve, ensure, execute            |
-| `@specrail/cli`      | CLI interface and MCP server (`specrail serve`)            |
+| `@specrail/cli`      | CLI interface (provider-first workflow)                    |
 
 For a deep dive into architecture, data flow, and trust boundaries, see [docs/architecture.md](docs/architecture.md).
 
@@ -148,24 +146,25 @@ For the full set of design principles, see [docs/design-principles.md](docs/desi
 
 ## Status
 
-### What works now (v0.1 — MVP vertical slice)
-
-- OpenAPI 3.x ingestion and normalization
-- Canonical capability model with Zod validation
-- Policy overlays with operation classification
-- Two-tier bundle caching
-- MCP tool definition export (per-operation, flat format)
-- SKILLS.md export
-- Direct execution through policy gate
-- CLI orchestration (ingest-first workflow)
-
-### In progress (v0.2 — Runtime broker pivot)
+### What works now (v0.2 — Runtime broker)
 
 - **Provider registry** — Versioned, schema-validated provider configuration
 - **Resolver** — Registry lookup, URL passthrough, well-known probing
 - **Broker** — Resolve/ensure/execute orchestration with automatic freshness checking
 - **Freshness model** — Four staleness causes: generator, policy, source, docs
-- **Default policy change** — Deny `action` alongside write/delete/admin
+- **Provider-first CLI** — `provider add/list/remove/show`, `resolve`, `capabilities`, `inspect`, `exec`, `refresh`, `export mcp/skills` all route through the broker
+- **Default policy** — Denies write, delete, admin, and action by default (reads only)
+- OpenAPI 3.x ingestion and normalization
+- Canonical capability model with Zod validation
+- Policy overlays with operation classification
+- Two-tier bundle caching with freshness metadata
+- MCP tool definition export (per-operation, flat format)
+- SKILLS.md export
+- Direct execution through policy gate
+- Manual `ingest` command preserved as escape hatch
+
+### In progress (v0.2b — MCP server)
+
 - **`specrail serve`** — Stdio MCP server with 5 broker-level tools
 - **Compressed MCP surface** — Provider-agnostic tools replace per-operation exports
 

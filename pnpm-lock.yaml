@@ -94,6 +94,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@specrail/broker':
+        specifier: workspace:*
+        version: link:../broker
       '@specrail/cache':
         specifier: workspace:*
         version: link:../cache
@@ -109,6 +112,9 @@ importers:
       '@specrail/policy':
         specifier: workspace:*
         version: link:../policy
+      '@specrail/resolver':
+        specifier: workspace:*
+        version: link:../resolver
       '@specrail/runtime':
         specifier: workspace:*
         version: link:../runtime

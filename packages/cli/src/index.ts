@@ -1,25 +1,44 @@
 // @specrail/cli -- User-facing command-line interface
 //
-// This is the entry point for `specrail` commands. It wires together all
-// Specrail packages into a coherent user experience. The CLI is the primary
-// way humans interact with Specrail; agents interact via MCP/SKILLS exports.
+// Provider-first workflow: register providers, then resolve/inspect/exec/export.
+// The broker handles resolution, freshness, and policy automatically.
 
 import { Command } from 'commander';
-import { ingestCommand } from './commands/ingest.js';
+import { providerCommand } from './commands/provider.js';
+import { resolveCommand } from './commands/resolve.js';
+import { capabilitiesCommand } from './commands/capabilities.js';
 import { inspectCommand } from './commands/inspect.js';
-import { exportCommand } from './commands/export.js';
 import { execCommand } from './commands/exec.js';
+import { refreshCommand } from './commands/refresh.js';
+import { exportCommand } from './commands/export.js';
+import { ingestCommand } from './commands/ingest.js';
 import { cacheCommand } from './commands/cache.js';
 
 const program = new Command()
   .name('specrail')
-  .description('Specrail turns API specs and docs into governed capabilities for agents.')
+  .description(
+    'Runtime capability broker for agents.\n\n' +
+      'Register API providers, then resolve, inspect, execute, and export\n' +
+      'governed capabilities. The broker handles freshness and policy automatically.\n\n' +
+      'Quick start:\n' +
+      '  specrail provider add petstore --spec-url ./petstore.yaml\n' +
+      '  specrail capabilities petstore\n' +
+      '  specrail exec petstore listPets --dry-run\n' +
+      '  specrail export mcp petstore',
+  )
   .version('0.1.0');
 
-program.addCommand(ingestCommand);
+// Primary: provider-first commands
+program.addCommand(providerCommand);
+program.addCommand(resolveCommand);
+program.addCommand(capabilitiesCommand);
 program.addCommand(inspectCommand);
-program.addCommand(exportCommand);
 program.addCommand(execCommand);
+program.addCommand(refreshCommand);
+program.addCommand(exportCommand);
+
+// Secondary: manual escape hatches
+program.addCommand(ingestCommand);
 program.addCommand(cacheCommand);
 
 program.parse();

@@ -28,6 +28,8 @@
   },
   "dependencies": {
     "@specrail/core": "workspace:*",
+    "@specrail/broker": "workspace:*",
+    "@specrail/resolver": "workspace:*",
     "@specrail/ingest": "workspace:*",
     "@specrail/policy": "workspace:*",
     "@specrail/cache": "workspace:*",

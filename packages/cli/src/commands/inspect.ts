@@ -1,20 +1,25 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { readBundle, listBundles } from '@specrail/cache';
+import { inspect as brokerInspect } from '@specrail/broker';
+import { listBundles } from '@specrail/cache';
 
 export const inspectCommand = new Command('inspect')
-  .description('Inspect a cached capability bundle')
-  .argument('[bundle-name]', 'Name of the bundle to inspect')
+  .description('Inspect a provider bundle (ensures bundle is current)')
+  .argument('[provider]', 'Provider name, spec URL, or file path')
   .option('--json', 'Output raw JSON')
   .option('--capabilities', 'List capabilities summary only')
   .option('--policy', 'Show policy decisions only')
-  .action(async (bundleName: string | undefined, options) => {
+  .action(async (provider: string | undefined, options) => {
     try {
-      // If no bundle name given, list all available bundles
-      if (!bundleName) {
+      // If no provider given, list all available bundles
+      if (!provider) {
         const bundles = await listBundles();
         if (bundles.length === 0) {
-          console.log(chalk.yellow('No cached bundles found. Run `specrail ingest` first.'));
+          console.log(
+            chalk.yellow(
+              'No cached bundles found. Register a provider: specrail provider add <name> --spec-url <url>',
+            ),
+          );
           return;
         }
         console.log(chalk.bold('Cached bundles:'));
@@ -26,21 +31,15 @@ export const inspectCommand = new Command('inspect')
         return;
       }
 
-      const bundle = await readBundle(bundleName);
-      if (!bundle) {
-        console.error(chalk.red(`Bundle "${bundleName}" not found in cache.`));
-        process.exit(1);
-      }
+      const bundle = await brokerInspect(provider);
 
-      // Raw JSON output
       if (options.json) {
         console.log(JSON.stringify(bundle, null, 2));
         return;
       }
 
-      // Capabilities summary
       if (options.capabilities) {
-        console.log(chalk.bold(`Capabilities in "${bundleName}":`));
+        console.log(chalk.bold(`Capabilities for "${provider}":`));
         for (const cap of bundle.capabilities) {
           const status = cap.policy.allowed ? chalk.green('ALLOWED') : chalk.red('DENIED');
           console.log(`  ${cap.id} [${cap.classification}] ${status}`);
@@ -48,9 +47,8 @@ export const inspectCommand = new Command('inspect')
         return;
       }
 
-      // Policy view
       if (options.policy) {
-        console.log(chalk.bold(`Policy decisions for "${bundleName}":`));
+        console.log(chalk.bold(`Policy decisions for "${provider}":`));
         console.log(`  Overlay: ${bundle.policy.overlayName}`);
         console.log(`  Allowed: ${bundle.policy.allowedCount}/${bundle.policy.totalCapabilities}`);
         console.log(`  Denied:  ${bundle.policy.deniedCount}/${bundle.policy.totalCapabilities}`);
@@ -63,8 +61,7 @@ export const inspectCommand = new Command('inspect')
         return;
       }
 
-      // Default: full summary
-      console.log(chalk.bold(`Bundle: ${bundleName}`));
+      console.log(chalk.bold(`Provider: ${provider}`));
       console.log(`  Source:       ${bundle.source.title} v${bundle.source.version}`);
       console.log(`  Spec:         ${bundle.source.specUrl}`);
       console.log(`  Format:       ${bundle.source.specFormat}`);
