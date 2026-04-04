@@ -1,5 +1,11 @@
 # Specrail
 
+[![CI](https://github.com/gerrymiller/specrail/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gerrymiller/specrail/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node ≥20](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![pnpm](https://img.shields.io/badge/pnpm-9-F69220?logo=pnpm&logoColor=white)](https://pnpm.io)
+
 **Turn API specs and docs into governed capabilities for agents.**
 
 ---
