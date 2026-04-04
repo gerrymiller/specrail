@@ -283,3 +283,52 @@ describe('parseOpenApiSpec - multi-auth fixture', () => {
     });
   });
 });
+
+describe('parseOpenApiSpec - OpenAPI 3.1.2 patch normalization', () => {
+  const FIXTURE_312 = resolve(__dirname, '../../../fixtures/specs/openapi-312.yaml');
+
+  it('parses an OpenAPI 3.1.2 spec without error', async () => {
+    const result = await parseOpenApiSpec(FIXTURE_312);
+    expect(result.source.title).toBe('Weather API (OpenAPI 3.1.2)');
+    expect(result.source.version).toBe('2.0.0');
+  });
+
+  it('detects openapi-3.1 format from a 3.1.2 spec', async () => {
+    const result = await parseOpenApiSpec(FIXTURE_312);
+    expect(result.source.specFormat).toBe('openapi-3.1');
+  });
+
+  it('extracts operations from a 3.1.2 spec', async () => {
+    const result = await parseOpenApiSpec(FIXTURE_312);
+    expect(result.operations).toHaveLength(2);
+  });
+
+  it('extracts getForecasts operation', async () => {
+    const result = await parseOpenApiSpec(FIXTURE_312);
+    const op = result.operations.find((o) => o.operationId === 'getForecasts');
+    expect(op).toBeDefined();
+    expect(op!.method).toBe('get');
+    expect(op!.path).toBe('/forecasts');
+  });
+
+  it('extracts getAlerts operation', async () => {
+    const result = await parseOpenApiSpec(FIXTURE_312);
+    const op = result.operations.find((o) => o.operationId === 'getAlerts');
+    expect(op).toBeDefined();
+    expect(op!.method).toBe('get');
+    expect(op!.path).toBe('/alerts');
+  });
+
+  it('extracts parameters from 3.1.2 spec', async () => {
+    const result = await parseOpenApiSpec(FIXTURE_312);
+    const op = result.operations.find((o) => o.operationId === 'getForecasts');
+    expect(op!.operation.parameters).toHaveLength(2);
+    expect(op!.operation.parameters[0].name).toBe('lat');
+    expect(op!.operation.parameters[1].name).toBe('lon');
+  });
+
+  it('extracts servers from 3.1.2 spec', async () => {
+    const result = await parseOpenApiSpec(FIXTURE_312);
+    expect(result.operations[0].operation.servers).toContain('https://api.weather.example.com/v2');
+  });
+});

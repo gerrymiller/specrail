@@ -1,5 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import type { OpenAPI, OpenAPIV3 } from 'openapi-types';
+import { parse as parseYaml } from 'yaml';
 import {
   type CapabilityOperation,
   type CapabilitySource,
@@ -32,7 +33,9 @@ export interface ParseResult {
 // TRUST BOUNDARY: The spec is an external input. We validate its structure
 // but do not trust its content for execution without policy evaluation.
 export async function parseOpenApiSpec(specPathOrUrl: string): Promise<ParseResult> {
-  const api = (await SwaggerParser.validate(specPathOrUrl)) as OpenAPIV3.Document;
+  const rawSpec = await loadRawSpec(specPathOrUrl);
+  const specForValidation = normalizeOpenApiPatchVersion(rawSpec);
+  const api = (await SwaggerParser.validate(specForValidation)) as OpenAPIV3.Document;
 
   const specFormat = detectSpecFormat(api);
   const servers = extractServers(api);
@@ -87,6 +90,50 @@ export async function parseOpenApiSpec(specPathOrUrl: string): Promise<ParseResu
   }
 
   return { source, operations };
+}
+
+async function loadRawSpec(specPathOrUrl: string): Promise<OpenAPI.Document> {
+  const content =
+    specPathOrUrl.startsWith('http://') || specPathOrUrl.startsWith('https://')
+      ? await fetchSpec(specPathOrUrl)
+      : await readSpecFile(specPathOrUrl);
+
+  return parseSpecContent(content);
+}
+
+async function fetchSpec(specUrl: string): Promise<string> {
+  const response = await fetch(specUrl, { signal: AbortSignal.timeout(30_000) });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch spec '${specUrl}': ${response.status} ${response.statusText}`);
+  }
+  return response.text();
+}
+
+async function readSpecFile(specPath: string): Promise<string> {
+  const { readFile } = await import('node:fs/promises');
+  return readFile(specPath, 'utf-8');
+}
+
+function parseSpecContent(content: string): OpenAPI.Document {
+  try {
+    return JSON.parse(content) as OpenAPI.Document;
+  } catch {
+    return parseYaml(content) as OpenAPI.Document;
+  }
+}
+
+function normalizeOpenApiPatchVersion(spec: OpenAPI.Document): OpenAPI.Document {
+  const openapi = (spec as { openapi?: unknown }).openapi;
+  if (typeof openapi !== 'string') return spec;
+
+  if (/^3\.1\.\d+$/.test(openapi) && openapi !== '3.1.0' && openapi !== '3.1.1') {
+    return {
+      ...spec,
+      openapi: '3.1.1',
+    } as OpenAPI.Document;
+  }
+
+  return spec;
 }
 
 function detectSpecFormat(api: OpenAPI.Document): 'openapi-3.0' | 'openapi-3.1' {

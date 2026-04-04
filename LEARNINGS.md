@@ -40,6 +40,13 @@ Project-specific learnings. AI assistants: read this at session start, update wh
 - **Auth at runtime only**: Auth credentials are resolved from environment variables at execution time. They never appear in the canonical model, bundles, or cache. This is a security boundary.
 - **Zod for validation**: The canonical model is defined as Zod schemas in `@specrail/core`. Runtime validation happens at bundle creation and deserialization boundaries.
 
+## 2026-04-04 — OpenAPI 3.1.2 Dogfood Fix
+
+- **weather.gov exposed a real ingest bug**: provider resolution worked, but capability generation failed before bundle creation because `@apidevtools/swagger-parser@10.1.1` hardcodes support for `3.1.0` and `3.1.1`, and rejects `openapi: 3.1.2`.
+- **Pragmatic fix**: in `packages/ingest/src/openapi.ts`, load the spec content first, then normalize unsupported patch-level `3.1.x` values to `3.1.1` before validation. This is intentionally narrow, and keeps the parser from dying on semantically compatible patch releases.
+- **Dogfood result after patch**: `specrail capabilities weather-gov --allowed-only` succeeded and produced a 65-capability read bundle.
+- **Separate product truth**: `weather-gov` is US/NWS-scoped. The Specrail pipeline can now broker it, but it still cannot answer Dubai weather because the upstream provider returns `404 Data Unavailable For Requested Point` for Dubai coordinates.
+
 ## 2026-04-04 — Runtime Broker Pivot
 
 Specrail's product direction is shifting from a manual ingest/export tool to a runtime capability broker. Key decisions:
