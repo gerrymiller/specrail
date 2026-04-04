@@ -78,5 +78,7 @@ export const CapabilityBundleSchema = z.object({
   policy: BundlePolicyMetaSchema,
   // The governed capabilities
   capabilities: z.array(CapabilitySchema),
+  // Provider-level augmentation from external docs (not per-capability)
+  augmentation: AugmentationSchema.optional(),
 });
 export type CapabilityBundle = z.infer<typeof CapabilityBundleSchema>;

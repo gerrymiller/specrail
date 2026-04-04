@@ -141,7 +141,6 @@ async function buildAndCache(
       classification,
       policy,
       auth: op.auth,
-      augmentation,
     };
   });
 
@@ -161,6 +160,7 @@ async function buildAndCache(
       deniedCount,
     },
     capabilities,
+    augmentation,
   };
 
   bundle.bundleHash = computeHash(JSON.stringify(bundle));

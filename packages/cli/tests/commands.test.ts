@@ -229,6 +229,67 @@ describe('CLI commands', () => {
       expect(parsed.version).toBe('1.0');
       expect(parsed.capabilities).toBeDefined();
     });
+
+    it('inspects a single capability by operationId', () => {
+      run(['provider', 'add', 'petstore', '--spec-url', PETSTORE_SPEC], { cwd: tmpDir });
+      const output = run(['inspect', 'petstore', '--capability', 'listPets'], { cwd: tmpDir });
+      expect(output).toContain('petstore:listPets');
+      expect(output).toContain('GET /pets');
+      expect(output).toContain('Parameters:');
+      expect(output).toContain('limit');
+    });
+
+    it('inspects a single capability by full ID', () => {
+      run(['provider', 'add', 'petstore', '--spec-url', PETSTORE_SPEC], { cwd: tmpDir });
+      const output = run(['inspect', 'petstore', '--capability', 'petstore:listPets'], {
+        cwd: tmpDir,
+      });
+      expect(output).toContain('petstore:listPets');
+      expect(output).toContain('GET /pets');
+    });
+
+    it('outputs single capability as JSON', () => {
+      run(['provider', 'add', 'petstore', '--spec-url', PETSTORE_SPEC], { cwd: tmpDir });
+      const output = run(['inspect', 'petstore', '--capability', 'listPets', '--json'], {
+        cwd: tmpDir,
+      });
+      const parsed = JSON.parse(output);
+      expect(parsed.id).toBe('petstore:listPets');
+      expect(parsed.operation.method).toBe('get');
+      expect(parsed.operation.parameters).toBeDefined();
+    });
+
+    it('shows error for unknown capability', () => {
+      run(['provider', 'add', 'petstore', '--spec-url', PETSTORE_SPEC], { cwd: tmpDir });
+      const { stdout, status } = runWithStatus(
+        ['inspect', 'petstore', '--capability', 'nonexistent'],
+        { cwd: tmpDir },
+      );
+      expect(status).toBe(1);
+      expect(stdout).toContain('not found');
+      expect(stdout).toContain('Available capabilities');
+    });
+
+    it('shows request body for POST capability', () => {
+      run(['provider', 'add', 'petstore', '--spec-url', PETSTORE_SPEC], { cwd: tmpDir });
+      const output = run(['inspect', 'petstore', '--capability', 'createPet'], { cwd: tmpDir });
+      expect(output).toContain('POST /pets');
+      expect(output).toContain('Request Body');
+    });
+
+    it('JSON output does not contain augmentation on capabilities', () => {
+      run(['provider', 'add', 'petstore', '--spec-url', PETSTORE_SPEC], { cwd: tmpDir });
+      const output = run(['inspect', 'petstore', '--json'], { cwd: tmpDir });
+      const parsed = JSON.parse(output);
+      for (const cap of parsed.capabilities) {
+        expect(cap.augmentation).toBeUndefined();
+      }
+    });
+
+    it('help text mentions --capability option', () => {
+      const output = run(['inspect', '--help']);
+      expect(output).toContain('--capability');
+    });
   });
 
   describe('specrail exec', () => {

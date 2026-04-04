@@ -387,3 +387,43 @@ describe('ResolvedProviderSchema', () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe('CapabilityBundleSchema - augmentation', () => {
+  const minimalBundle = {
+    version: '1.0' as const,
+    source: {
+      specUrl: 'https://example.com/spec.json',
+      specFormat: 'openapi-3.0' as const,
+      title: 'Test',
+      version: '1.0.0',
+    },
+    generatedAt: new Date().toISOString(),
+    bundleHash: 'abc123',
+    policy: { overlayName: 'test', totalCapabilities: 0, allowedCount: 0, deniedCount: 0 },
+    capabilities: [],
+  };
+
+  it('accepts a bundle without augmentation', () => {
+    const result = CapabilityBundleSchema.safeParse(minimalBundle);
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a bundle with augmentation at the bundle level', () => {
+    const result = CapabilityBundleSchema.safeParse({
+      ...minimalBundle,
+      augmentation: { docsContext: 'some docs', context7Docs: 'more docs' },
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.augmentation?.docsContext).toBe('some docs');
+    }
+  });
+
+  it('accepts a bundle with empty augmentation', () => {
+    const result = CapabilityBundleSchema.safeParse({
+      ...minimalBundle,
+      augmentation: {},
+    });
+    expect(result.success).toBe(true);
+  });
+});

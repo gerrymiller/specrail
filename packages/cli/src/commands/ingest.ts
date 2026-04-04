@@ -74,7 +74,6 @@ export const ingestCommand = new Command('ingest')
           classification,
           policy,
           auth: op.auth,
-          augmentation,
         };
       });
 
@@ -94,6 +93,7 @@ export const ingestCommand = new Command('ingest')
           deniedCount,
         },
         capabilities,
+        augmentation,
       };
 
       // Compute hash over the normalized bundle content
