@@ -2,6 +2,33 @@
 
 Specrail supports direct execution of capabilities against their target APIs. This is the most sensitive operation in the system and carries the strongest safety guarantees.
 
+## Broker-Mediated Execution
+
+In the runtime-broker model, execution is always broker-mediated:
+
+```
+specrail exec <provider> <capability> --params '{...}'
+       |
+       v
+   [Broker.ensure] -- resolve provider, check freshness, rebuild if stale
+       |
+       v
+   [Find capability in bundle]
+       |
+       v
+   [Policy gate] -- hard deny if not allowed
+       |
+       v
+   [Auth resolution] -- env vars only, per-provider prefix
+       |
+       v
+   [HTTP request] -- constructed from canonical model
+```
+
+The caller never manually ingests or manages bundles. The broker ensures the bundle is current before locating the capability and passing it to the executor.
+
+Via MCP, the same flow is triggered by the `specrail_exec` tool, which calls `broker.execute()` internally.
+
 ## Policy Gate
 
 Every execution attempt passes through the policy gate first:
@@ -14,6 +41,8 @@ Execute request
 ```
 
 This is a hard gate, not a warning. Denied operations throw an error and the HTTP request is never made. There is no bypass, no override flag, no force mode.
+
+The default policy denies all side-effecting operations: write, delete, admin, and action. Only reads are allowed without explicit policy configuration.
 
 ## Auth Resolution
 

@@ -20,30 +20,36 @@ Agents shouldn't need to discover API surfaces at runtime and hope for the best.
 
 **Specrail exists because API capabilities for agents need governance, not just generation.**
 
-It ingests OpenAPI specs (and optionally augments them with live documentation), applies policy overlays that control what gets exposed and how, generates canonical capability bundles cached outside your repo, and exports governed tool definitions — for MCP servers, SKILLS.md files, or direct execution.
+Specrail is a **runtime capability broker**. You register API providers once; Specrail automatically resolves their specs, builds governed capability bundles, caches them with freshness tracking, and serves capabilities to agents through a compressed MCP surface or CLI.
 
 The result: your agent gets exactly the capabilities it should have, classified by risk, filtered by policy, with auth resolved at runtime. Nothing more. Nothing less.
 
 ## How It Works
 
-Specrail operates as a pipeline:
-
 ```
-OpenAPI Spec ──┐
-               ├──▶ Ingest ──▶ Normalize ──▶ Classify ──▶ Policy ──▶ Bundle ──▶ Cache
-Documentation ─┘                                                         │
-                                                                         ├──▶ MCP Export
-                                                                         ├──▶ SKILLS Export
-                                                                         └──▶ Direct Execute
+Agent / CLI / MCP
+       |
+       v
+   [Broker] -- resolve provider, check freshness, rebuild if stale
+       |
+       +-- Provider Registry (spec URL, policy, auth, TTL)
+       +-- Two-tier Cache (.specrail/ + ~/.cache/specrail/)
+       |
+       v
+   [Ingest] -> [Classify] -> [Policy] -> [Bundle] -> [Cache]
+       |
+       +---> MCP Server (5 broker-level tools)
+       +---> SKILLS.md Export
+       +---> Direct Execution
 ```
 
-1. **Ingest** — Parse an OpenAPI 3.x spec. Optionally fetch supplementary documentation.
-2. **Normalize** — Transform raw spec operations into a canonical capability model with uniform structure.
-3. **Classify** — Assign each operation a class: `read`, `write`, `delete`, `admin`, or `action`.
-4. **Policy** — Apply policy overlays that filter, restrict, and annotate capabilities. Writes denied by default.
-5. **Bundle** — Produce a `CapabilityBundle` — a self-contained, serializable representation of the governed API surface.
-6. **Cache** — Store the bundle in a two-tier cache (project-local `.specrail/` or global `~/.cache/specrail/`). Never inside the repo.
-7. **Export / Execute** — Generate MCP tool definitions, SKILLS.md files, or execute operations directly through the policy gate.
+1. **Resolve** — Look up the provider in the registry, or accept a URL/file directly.
+2. **Ensure** — Check cache freshness (generator version, policy hash, source ETag/hash, TTL). Rebuild if stale.
+3. **Ingest** — Parse an OpenAPI 3.x spec. Optionally fetch supplementary documentation.
+4. **Classify** — Assign each operation a class: `read`, `write`, `delete`, `admin`, or `action`.
+5. **Policy** — Apply policy overlays. All side-effecting operations denied by default.
+6. **Bundle** — Produce a `CapabilityBundle` with freshness metadata. Cache outside the repo.
+7. **Serve** — Expose capabilities via MCP server, SKILLS export, or direct execution.
 
 ## Quick Start
 
@@ -53,37 +59,61 @@ git clone https://github.com/gerrymiller/specrail
 cd specrail
 pnpm install && pnpm build
 
-# Ingest the Petstore spec with default policy (reads only)
-node packages/cli/dist/index.js ingest fixtures/specs/petstore.yaml --name petstore
+# Register a provider
+node packages/cli/dist/index.js provider add petstore \
+  --spec-url https://petstore3.swagger.io/api/v3/openapi.json
+
+# Inspect the provider (auto-resolves and builds the bundle)
+node packages/cli/dist/index.js inspect petstore
+
+# List capabilities
+node packages/cli/dist/index.js capabilities petstore
 
 # Export MCP tool definitions
 node packages/cli/dist/index.js export mcp petstore
 
-# Or generate a SKILLS.md
-node packages/cli/dist/index.js export skills petstore
+# Execute a capability (reads allowed by default)
+node packages/cli/dist/index.js exec petstore listPets --dry-run
 ```
 
-You now have governed, policy-filtered tool definitions for the Petstore API. Write operations are denied by default. To allow specific writes, add a policy overlay:
+Write, delete, admin, and action operations are denied by default. To allow specific operations, add a policy overlay:
 
 ```bash
-# Re-ingest with a custom policy file
-node packages/cli/dist/index.js ingest fixtures/specs/petstore.yaml --name petstore --policy ./my-policy.json
-node packages/cli/dist/index.js export mcp petstore
+node packages/cli/dist/index.js provider add petstore \
+  --spec-url https://petstore3.swagger.io/api/v3/openapi.json \
+  --policy ./my-policy.json
+node packages/cli/dist/index.js refresh petstore
 ```
+
+### MCP Server
+
+Agents connect to Specrail as an MCP server with 5 broker-level tools:
+
+```json
+{
+  "mcpServers": {
+    "specrail": { "command": "specrail", "args": ["serve"] }
+  }
+}
+```
+
+See [docs/mcp-strategy.md](docs/mcp-strategy.md) for tool definitions.
 
 ## Architecture
 
-Specrail is a TypeScript monorepo with seven packages:
+Specrail is a TypeScript monorepo with nine packages:
 
-| Package             | Purpose                                                      |
-| ------------------- | ------------------------------------------------------------ |
-| `@specrail/core`    | Canonical capability model, shared types, Zod schemas        |
-| `@specrail/ingest`  | OpenAPI parsing, documentation fetching, normalization       |
-| `@specrail/policy`  | Policy overlay engine, operation classification, filtering   |
-| `@specrail/cache`   | Two-tier bundle cache (local + global), lookup, invalidation |
-| `@specrail/runtime` | Direct API execution through the policy gate                 |
-| `@specrail/export`  | MCP tool definition + SKILLS.md generation                   |
-| `@specrail/cli`     | CLI interface orchestrating all packages                     |
+| Package              | Purpose                                                    |
+| -------------------- | ---------------------------------------------------------- |
+| `@specrail/core`     | Canonical capability model, shared types, Zod schemas      |
+| `@specrail/resolver` | Provider registry, resolution chain, spec discovery        |
+| `@specrail/ingest`   | OpenAPI parsing, documentation fetching, normalization     |
+| `@specrail/policy`   | Policy overlay engine, operation classification, filtering |
+| `@specrail/cache`    | Two-tier bundle cache with freshness tracking              |
+| `@specrail/runtime`  | Direct API execution through the policy gate               |
+| `@specrail/export`   | MCP tool definitions + SKILLS.md generation                |
+| `@specrail/broker`   | Runtime orchestration: resolve, ensure, execute            |
+| `@specrail/cli`      | CLI interface and MCP server (`specrail serve`)            |
 
 For a deep dive into architecture, data flow, and trust boundaries, see [docs/architecture.md](docs/architecture.md).
 
@@ -91,26 +121,28 @@ For a deep dive into architecture, data flow, and trust boundaries, see [docs/ar
 
 Specrail is not another OpenAPI-to-MCP generator. Here's what sets it apart:
 
-| Concern                    | Naive Generators         | Specrail                                                    |
-| -------------------------- | ------------------------ | ----------------------------------------------------------- |
-| Operation filtering        | None — expose everything | Policy overlays control every operation                     |
-| Write safety               | Hope the agent behaves   | Writes denied by default                                    |
-| Operation classification   | None                     | Every operation classified (read/write/delete/admin/action) |
-| Auth handling              | Baked into config        | Resolved from env vars at runtime, never cached             |
-| Generated artifacts        | Committed to repo, drift | Cached outside repo, regenerated from source                |
-| Canonical model            | Whatever the spec says   | Normalized model decoupled from any spec format             |
-| Documentation augmentation | None                     | Enrich capabilities with live docs                          |
-| Inspectability             | Opaque                   | Bundles are human-readable JSON, always inspectable         |
+| Concern                  | Naive Generators         | Specrail                                                    |
+| ------------------------ | ------------------------ | ----------------------------------------------------------- |
+| Operation filtering      | None — expose everything | Policy overlays control every operation                     |
+| Write safety             | Hope the agent behaves   | All side effects denied by default (write, delete, action)  |
+| Operation classification | None                     | Every operation classified (read/write/delete/admin/action) |
+| Auth handling            | Baked into config        | Resolved from env vars at runtime, never cached             |
+| Generated artifacts      | Committed to repo, drift | Cached outside repo, auto-refreshed by the broker           |
+| Canonical model          | Whatever the spec says   | Normalized model decoupled from any spec format             |
+| MCP integration          | One tool per operation   | 5 broker-level tools for any number of providers            |
+| Bundle lifecycle         | Manual regeneration      | Automatic freshness checking with 4 staleness causes        |
+| Inspectability           | Opaque                   | Bundles are human-readable JSON, always inspectable         |
 
 ## Key Design Decisions
 
 These are deliberate, opinionated choices:
 
 - **Generated bundles never live in the repo.** They're cached in `.specrail/` (project-local) or `~/.cache/specrail/` (global). The spec and policy are source-of-truth; bundles are derived artifacts.
-- **Policy-first.** Every operation passes through a policy gate. Writes are denied by default. You opt in to danger, not out of it.
+- **Policy-first.** Every operation passes through a policy gate. All side-effecting operations (write, delete, admin, action) are denied by default. You opt in to danger, not out of it.
+- **Broker-first.** Specrail is a runtime capability broker, not a build-time generator. Users register providers once; the broker handles resolution, caching, freshness, and rebuilding automatically.
 - **Canonical model at the center.** Specrail doesn't pass raw OpenAPI structures around. Everything is normalized into a `CapabilityBundle` with uniform types. This decouples the pipeline from any single spec format.
 - **Auth credentials never in bundles or cache.** Credentials are resolved from environment variables at execution time. The cache stores capability metadata, never secrets.
-- **MCP and SKILLS are first-class exports.** Not afterthoughts. The export layer produces production-quality tool definitions and structured skill descriptions.
+- **Compressed MCP surface.** Specrail serves 5 broker-level MCP tools instead of one per API operation. Adding a provider doesn't change the MCP surface.
 
 For the full set of design principles, see [docs/design-principles.md](docs/design-principles.md).
 
@@ -122,32 +154,43 @@ For the full set of design principles, see [docs/design-principles.md](docs/desi
 - Canonical capability model with Zod validation
 - Policy overlays with operation classification
 - Two-tier bundle caching
-- MCP tool definition export
+- MCP tool definition export (per-operation, flat format)
 - SKILLS.md export
 - Direct execution through policy gate
-- CLI orchestration
+- CLI orchestration (ingest-first workflow)
+
+### In progress (v0.2 — Runtime broker pivot)
+
+- **Provider registry** — Versioned, schema-validated provider configuration
+- **Resolver** — Registry lookup, URL passthrough, well-known probing
+- **Broker** — Resolve/ensure/execute orchestration with automatic freshness checking
+- **Freshness model** — Four staleness causes: generator, policy, source, docs
+- **Default policy change** — Deny `action` alongside write/delete/admin
+- **`specrail serve`** — Stdio MCP server with 5 broker-level tools
+- **Compressed MCP surface** — Provider-agnostic tools replace per-operation exports
 
 ### Planned
 
-- **v0.2** — Advanced policy rules, multiple simultaneous specs, policy composition
-- **v0.3** — OAuth2 token exchange, plugin system for custom augmentation
-- **v1.0** — Stable public API, production hardening
+- **v0.3** — Provider-centric SKILLS template, OAuth2 token exchange
+- **v1.0** — Stable public API, known-provider defaults, production hardening
 
-See [docs/roadmap.md](docs/roadmap.md) for the full roadmap.
+See [docs/runtime-broker.md](docs/runtime-broker.md) for the full design reference.
 
 ## Documentation
 
-| Document                                                | Description                                              |
-| ------------------------------------------------------- | -------------------------------------------------------- |
-| [Architecture](docs/architecture.md)                    | Package dependency graph, data flow, trust boundaries    |
-| [Cache Model](docs/cache-model.md)                      | Two-tier cache design, directory structure, lookup order |
-| [Canonical Schema](docs/canonical-capability-schema.md) | Full schema reference for the capability model           |
-| [Competitive Landscape](docs/competitive-landscape.md)  | How Specrail compares to alternatives                    |
-| [Design Principles](docs/design-principles.md)          | Core design principles and rationale                     |
-| [Execution Model](docs/execution-model.md)              | How direct API execution works                           |
-| [Policy Overlays](docs/policy-overlays.md)              | Policy system reference                                  |
-| [Roadmap](docs/roadmap.md)                              | Project roadmap and versioning plan                      |
-| [Security Model](docs/security-model.md)                | Security considerations and trust boundaries             |
+| Document                                                | Description                                           |
+| ------------------------------------------------------- | ----------------------------------------------------- |
+| [Runtime Broker](docs/runtime-broker.md)                | Authoritative design reference for the broker model   |
+| [Provider Registry](docs/provider-registry.md)          | Registry format, resolution order, examples           |
+| [MCP Strategy](docs/mcp-strategy.md)                    | Compressed MCP surface, tool definitions, rationale   |
+| [Architecture](docs/architecture.md)                    | Package dependency graph, data flow, trust boundaries |
+| [Cache Model](docs/cache-model.md)                      | Two-tier cache, freshness model, staleness causes     |
+| [Canonical Schema](docs/canonical-capability-schema.md) | Full schema reference for the capability model        |
+| [Competitive Landscape](docs/competitive-landscape.md)  | How Specrail compares to alternatives                 |
+| [Design Principles](docs/design-principles.md)          | Core design principles and rationale                  |
+| [Execution Model](docs/execution-model.md)              | Broker-mediated API execution                         |
+| [Policy Overlays](docs/policy-overlays.md)              | Policy system reference                               |
+| [Security Model](docs/security-model.md)                | Security considerations and trust boundaries          |
 
 ## Contributing
 

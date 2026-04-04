@@ -13,9 +13,9 @@ Do **not** preload the entire `docs/` directory. It exists for reference, not wa
 
 ## Project Summary
 
-Specrail turns API specs into governed capability bundles for agents. TypeScript monorepo: `pnpm` + `turbo` + `tsup` + `vitest`.
+Specrail is a runtime capability broker for agents. It resolves API providers, ensures governed capability bundles are current, and serves capabilities through a stable broker interface and compressed MCP surface. TypeScript monorepo: `pnpm` + `turbo` + `tsup` + `vitest`.
 
-Packages: `@specrail/{core, ingest, policy, cache, runtime, export, cli}` under `packages/`.
+Packages: `@specrail/{core, resolver, ingest, policy, cache, runtime, export, broker, cli}` under `packages/`.
 
 ## Essential Commands
 
@@ -70,31 +70,39 @@ chore(deps): bump vitest to 3.1
 - Policy overlays are the authority for what gets exposed
 - The canonical `CapabilityBundle` model (in `@specrail/core`) is the center of gravity
 - All cross-package types flow through `@specrail/core`
+- The broker is the orchestration layer — CLI and MCP server are thin wrappers
+- Default policy denies all side-effecting operations (write, delete, admin, action)
+- Provider registry is versioned and Zod-validated on every read
 
 ## Key Files
 
-| Path                    | Purpose                                    |
-| ----------------------- | ------------------------------------------ |
-| `packages/core/src/`    | Canonical model, Zod schemas, shared types |
-| `packages/ingest/src/`  | OpenAPI parser, doc fetcher, normalizer    |
-| `packages/policy/src/`  | Policy engine, operation classifier        |
-| `packages/cache/src/`   | Two-tier cache (local + global)            |
-| `packages/runtime/src/` | Direct API execution through policy gate   |
-| `packages/export/src/`  | MCP + SKILLS.md generators                 |
-| `packages/cli/src/`     | CLI entry point and commands               |
-| `fixtures/specs/`       | Test OpenAPI specs                         |
-| `fixtures/policies/`    | Test policy overlays                       |
+| Path                     | Purpose                                         |
+| ------------------------ | ----------------------------------------------- |
+| `packages/core/src/`     | Canonical model, Zod schemas, shared types      |
+| `packages/resolver/src/` | Provider registry, resolution chain             |
+| `packages/ingest/src/`   | OpenAPI parser, doc fetcher, normalizer         |
+| `packages/policy/src/`   | Policy engine, operation classifier             |
+| `packages/cache/src/`    | Two-tier cache with freshness tracking          |
+| `packages/runtime/src/`  | Direct API execution through policy gate        |
+| `packages/export/src/`   | MCP + SKILLS.md generators                      |
+| `packages/broker/src/`   | Runtime orchestration: resolve, ensure, execute |
+| `packages/cli/src/`      | CLI entry point, commands, and MCP server       |
+| `fixtures/specs/`        | Test OpenAPI specs                              |
+| `fixtures/policies/`     | Test policy overlays                            |
 
 ## Deep Documentation
 
 When needed, consult `docs/`:
 
+- `docs/runtime-broker.md` — **authoritative design reference** for the broker model
+- `docs/provider-registry.md` — registry format, resolution order, examples
+- `docs/mcp-strategy.md` — compressed MCP surface, tool definitions, rationale
 - `docs/architecture.md` — package graph, data flow, trust boundaries
 - `docs/canonical-capability-schema.md` — full schema reference
 - `docs/policy-overlays.md` — policy format and rule evaluation
 - `docs/security-model.md` — credential handling, trust boundaries
-- `docs/cache-model.md` — cache tiers, directory structure
-- `docs/execution-model.md` — runtime execution flow
+- `docs/cache-model.md` — cache tiers, freshness model, staleness causes
+- `docs/execution-model.md` — broker-mediated execution flow
 
 ## Attribution
 
