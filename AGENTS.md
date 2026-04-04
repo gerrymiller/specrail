@@ -4,10 +4,10 @@ Portable instructions for AI coding assistants (Claude Code, Droid, Cursor, Zed 
 
 ## Bootstrap Order
 
-1. Read your tool's global/user instruction file (e.g., `~/.claude/settings.json`, `~/.factory/AGENTS.md`)
-2. Read `LEARNINGS.md` at repo root
-3. Read this file
-4. Only pull in `docs/` files when a task explicitly requires deep context
+1. If your tool has a user-level or global instruction file, read it first.
+2. Read `LEARNINGS.md` at repo root.
+3. Read this file.
+4. Only pull in `docs/` files when a task explicitly requires deep context.
 
 Do **not** preload the entire `docs/` directory. It exists for reference, not warm-up.
 

@@ -1,4 +1,4 @@
-import { mkdir, writeFile, readFile, readdir, rm, stat } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { type CapabilityBundle, CapabilityBundleSchema } from '@specrail/core';
 import { getBundlePath, getLocalCachePath, getGlobalCachePath } from './paths.js';

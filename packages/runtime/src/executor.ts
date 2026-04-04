@@ -1,5 +1,5 @@
 import type { Capability } from '@specrail/core';
-import { resolveAuth, type ResolvedAuth } from './auth.js';
+import { resolveAuth } from './auth.js';
 
 // Execution options for a direct API call
 export interface ExecOptions {

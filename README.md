@@ -42,24 +42,27 @@ Documentation ─┘                                                         │
 ## Quick Start
 
 ```bash
-# Install Specrail
-pnpm add -g specrail
+# Clone and build from source (not yet published to npm)
+git clone https://github.com/gerrymiller/specrail
+cd specrail
+pnpm install && pnpm build
 
 # Ingest the Petstore spec with default policy (reads only)
-specrail ingest https://petstore3.swagger.io/api/v3/openapi.json --name petstore
+node packages/cli/dist/index.js ingest fixtures/specs/petstore.yaml --name petstore
 
 # Export MCP tool definitions
-specrail export mcp petstore
+node packages/cli/dist/index.js export mcp petstore
 
 # Or generate a SKILLS.md
-specrail export skills petstore
+node packages/cli/dist/index.js export skills petstore
 ```
 
-That's it. You now have governed, policy-filtered tool definitions for the Petstore API. Write operations are denied by default. To allow specific writes, add a policy overlay:
+You now have governed, policy-filtered tool definitions for the Petstore API. Write operations are denied by default. To allow specific writes, add a policy overlay:
 
 ```bash
-specrail policy apply petstore ./my-policy.json
-specrail export mcp petstore  # Re-export with updated policy
+# Re-ingest with a custom policy file
+node packages/cli/dist/index.js ingest fixtures/specs/petstore.yaml --name petstore --policy ./my-policy.json
+node packages/cli/dist/index.js export mcp petstore
 ```
 
 ## Architecture
