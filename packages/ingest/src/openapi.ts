@@ -33,9 +33,10 @@ export interface ParseResult {
 // TRUST BOUNDARY: The spec is an external input. We validate its structure
 // but do not trust its content for execution without policy evaluation.
 export async function parseOpenApiSpec(specPathOrUrl: string): Promise<ParseResult> {
-  const rawSpec = await loadRawSpec(specPathOrUrl);
-  const specForValidation = normalizeOpenApiPatchVersion(rawSpec);
-  const api = (await SwaggerParser.validate(specForValidation)) as OpenAPIV3.Document;
+  const rawContent = await loadRawContent(specPathOrUrl);
+  const normalizedContent = normalizeVersionInContent(rawContent);
+  const parsed = parseSpecContent(normalizedContent);
+  const api = (await SwaggerParser.validate(parsed)) as OpenAPIV3.Document;
 
   const specFormat = detectSpecFormat(api);
   const servers = extractServers(api);
@@ -92,13 +93,10 @@ export async function parseOpenApiSpec(specPathOrUrl: string): Promise<ParseResu
   return { source, operations };
 }
 
-async function loadRawSpec(specPathOrUrl: string): Promise<OpenAPI.Document> {
-  const content =
-    specPathOrUrl.startsWith('http://') || specPathOrUrl.startsWith('https://')
-      ? await fetchSpec(specPathOrUrl)
-      : await readSpecFile(specPathOrUrl);
-
-  return parseSpecContent(content);
+async function loadRawContent(specPathOrUrl: string): Promise<string> {
+  return specPathOrUrl.startsWith('http://') || specPathOrUrl.startsWith('https://')
+    ? await fetchSpec(specPathOrUrl)
+    : await readSpecFile(specPathOrUrl);
 }
 
 async function fetchSpec(specUrl: string): Promise<string> {
@@ -122,18 +120,27 @@ function parseSpecContent(content: string): OpenAPI.Document {
   }
 }
 
-function normalizeOpenApiPatchVersion(spec: OpenAPI.Document): OpenAPI.Document {
-  const openapi = (spec as { openapi?: unknown }).openapi;
-  if (typeof openapi !== 'string') return spec;
+// Highest patch version that @apidevtools/swagger-parser@10 accepts per major.minor.
+const SWAGGER_PARSER_MAX_KNOWN: Record<string, string> = {
+  '3.0': '3.0.3',
+  '3.1': '3.1.1',
+};
 
-  if (/^3\.1\.\d+$/.test(openapi) && openapi !== '3.1.0' && openapi !== '3.1.1') {
-    return {
-      ...spec,
-      openapi: '3.1.1',
-    } as OpenAPI.Document;
-  }
-
-  return spec;
+// Rewrite unsupported OpenAPI patch versions at the string level before
+// SwaggerParser ever parses the content. This avoids double-parse and
+// doesn't mutate parsed structures. Only fires for known major.minor
+// families where the patch exceeds what swagger-parser accepts.
+function normalizeVersionInContent(content: string): string {
+  return content.replace(
+    /^(openapi\s*:\s*['"]?)(3\.\d+)\.(\d+)(['"]?)/m,
+    (match, prefix: string, majorMinor: string, patch: string, suffix: string) => {
+      const maxKnown = SWAGGER_PARSER_MAX_KNOWN[majorMinor];
+      if (!maxKnown) return match;
+      const maxPatch = parseInt(maxKnown.split('.')[2], 10);
+      if (parseInt(patch, 10) <= maxPatch) return match;
+      return `${prefix}${maxKnown}${suffix}`;
+    },
+  );
 }
 
 function detectSpecFormat(api: OpenAPI.Document): 'openapi-3.0' | 'openapi-3.1' {
