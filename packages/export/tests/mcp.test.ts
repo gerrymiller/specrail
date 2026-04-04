@@ -227,4 +227,60 @@ describe('exportMcp', () => {
     expect(tools[0].annotations?.destructiveHint).toBe(true);
     expect(tools[0].annotations?.readOnlyHint).toBe(false);
   });
+
+  it('marks requiresApproval capabilities in description', () => {
+    const cap = makeCapability({
+      policy: {
+        allowed: true,
+        sensitivity: 'internal',
+        requiresApproval: true,
+        exportVisible: true,
+        redaction: [],
+      },
+    });
+    const bundle = makeBundle([cap]);
+    const tools = exportMcp(bundle);
+    expect(tools[0].description).toContain('[REQUIRES APPROVAL]');
+  });
+
+  it('extracts properties from requestBody into inputSchema', () => {
+    const cap = makeCapability({
+      id: 'petstore:createPet',
+      operationId: 'createPet',
+      description: 'Creates a new pet',
+      classification: 'write',
+      operation: {
+        method: 'post',
+        path: '/pets',
+        servers: ['https://petstore.example.com/v1'],
+        parameters: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              type: 'object',
+              properties: {
+                name: { type: 'string', description: 'Pet name' },
+                tag: { type: 'string', description: 'Optional tag' },
+              },
+              required: ['name'],
+            },
+          },
+        },
+        responses: { '201': { description: 'Created' } },
+      },
+    });
+    const bundle = makeBundle([cap]);
+    const tools = exportMcp(bundle);
+    expect(tools[0].inputSchema.properties).toHaveProperty('name');
+    expect(tools[0].inputSchema.properties).toHaveProperty('tag');
+    expect(tools[0].inputSchema.required).toContain('name');
+  });
+
+  it('uses capability name as fallback description when description is empty', () => {
+    const cap = makeCapability({ description: '' });
+    const bundle = makeBundle([cap]);
+    const tools = exportMcp(bundle);
+    expect(tools[0].description).toBe('List Pets');
+  });
 });

@@ -1,0 +1,147 @@
+openapi: '3.0.3'
+info:
+  title: Multi Auth API
+  version: '1.0.0'
+  description: A minimal spec for testing multiple security scheme types.
+
+servers:
+  - url: https://api.example.com/v1
+
+paths:
+  /bearer-resource:
+    get:
+      operationId: getBearerResource
+      summary: Get bearer-protected resource
+      description: Returns a resource protected by bearer token auth.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+
+  /basic-resource:
+    get:
+      operationId: getBasicResource
+      summary: Get basic-auth-protected resource
+      description: Returns a resource protected by HTTP basic auth.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+
+  /oauth-resource:
+    get:
+      operationId: getOAuthResource
+      summary: Get OAuth2-protected resource
+      description: Returns a resource protected by OAuth2 client credentials.
+      security:
+        - oauth2ClientCreds:
+            - read:data
+      responses:
+        '200':
+          description: OK
+
+  /oauth-authcode:
+    get:
+      operationId: getOAuthAuthCodeResource
+      summary: Get OAuth2 authorization_code protected resource
+      description: Returns a resource protected by OAuth2 authorization code flow.
+      security:
+        - oauth2AuthCode:
+            - read:data
+      responses:
+        '200':
+          description: OK
+
+  /oauth-implicit:
+    get:
+      operationId: getOAuthImplicitResource
+      summary: Get OAuth2 implicit flow protected resource
+      description: Returns a resource protected by OAuth2 implicit flow (no tokenUrl).
+      security:
+        - oauth2Implicit:
+            - read:data
+      responses:
+        '200':
+          description: OK
+
+  /query-key:
+    get:
+      operationId: getQueryKeyResource
+      summary: Get resource with API key in query
+      description: Returns a resource using api-key passed as a query parameter.
+      security:
+        - queryApiKey: []
+      responses:
+        '200':
+          description: OK
+
+  /no-security:
+    get:
+      operationId: getNoSecurityResource
+      summary: Operation with no security specified
+      description: No security field at all - inherits nothing.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json: {}
+        '404':
+          description: Not found
+
+  /public:
+    get:
+      operationId: getPublicResource
+      summary: Public endpoint
+      description: No authentication required.
+      security: []
+      responses:
+        '200':
+          description: OK
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token authentication
+
+    basicAuth:
+      type: http
+      scheme: basic
+      description: HTTP basic authentication
+
+    oauth2ClientCreds:
+      type: oauth2
+      description: OAuth2 client credentials
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/token
+          scopes:
+            read:data: Read access to data
+
+    oauth2AuthCode:
+      type: oauth2
+      description: OAuth2 authorization code
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/authorize
+          tokenUrl: https://auth.example.com/token
+          scopes:
+            read:data: Read access to data
+
+    oauth2Implicit:
+      type: oauth2
+      description: OAuth2 implicit flow (no tokenUrl)
+      flows:
+        implicit:
+          authorizationUrl: https://auth.example.com/authorize
+          scopes:
+            read:data: Read access to data
+
+    queryApiKey:
+      type: apiKey
+      name: api_key
+      in: query
+      description: API key passed as a query parameter

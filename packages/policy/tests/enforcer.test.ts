@@ -287,6 +287,59 @@ describe('enforce', () => {
     expect(result.requiresApproval).toBe(true);
   });
 
+  it('matches rule by method', () => {
+    const overlay: PolicyOverlay = {
+      version: '1.0',
+      name: 'method-match',
+      rules: [
+        {
+          match: { method: 'post' },
+          effect: 'allow',
+        },
+      ],
+      defaults: {
+        sensitivity: 'internal',
+        requiresApproval: false,
+        exportVisible: true,
+      },
+    };
+    const ctx: EnforcementContext = {
+      classification: 'write',
+      operationId: 'createPet',
+      path: '/pets',
+      method: 'post',
+    };
+    const result = enforce(overlay, ctx);
+    expect(result.allowed).toBe(true);
+  });
+
+  it('does not match rule when method differs', () => {
+    const overlay: PolicyOverlay = {
+      version: '1.0',
+      name: 'method-nomatch',
+      rules: [
+        {
+          match: { method: 'delete' },
+          effect: 'allow',
+        },
+      ],
+      defaults: {
+        sensitivity: 'internal',
+        requiresApproval: false,
+        exportVisible: true,
+      },
+    };
+    const ctx: EnforcementContext = {
+      classification: 'write',
+      operationId: 'createPet',
+      path: '/pets',
+      method: 'post',
+    };
+    const result = enforce(overlay, ctx);
+    // No rule matched, fail-closed
+    expect(result.allowed).toBe(false);
+  });
+
   it('overrides exportVisible from rule', () => {
     const overlay: PolicyOverlay = {
       version: '1.0',
@@ -313,6 +366,56 @@ describe('enforce', () => {
     const result = enforce(overlay, ctx);
     expect(result.allowed).toBe(false);
     expect(result.exportVisible).toBe(false);
+  });
+
+  it('handles deny rule without a reason field', () => {
+    const overlay: PolicyOverlay = {
+      version: '1.0',
+      name: 'deny-no-reason',
+      rules: [
+        {
+          match: { classification: ['write'] },
+          effect: 'deny',
+          // No reason field
+        },
+      ],
+      defaults: {
+        sensitivity: 'internal',
+        requiresApproval: false,
+        exportVisible: true,
+      },
+    };
+    const ctx: EnforcementContext = {
+      classification: 'write',
+      path: '/pets',
+      method: 'post',
+    };
+    const result = enforce(overlay, ctx);
+    expect(result.allowed).toBe(false);
+    expect(result.denyReason).toBeUndefined();
+  });
+
+  it('uses fallback defaults when overlay has no defaults field', () => {
+    const overlay = {
+      version: '1.0' as const,
+      name: 'no-defaults',
+      rules: [
+        {
+          match: { classification: ['read'] as const },
+          effect: 'allow' as const,
+        },
+      ],
+    } as PolicyOverlay;
+    const ctx: EnforcementContext = {
+      classification: 'read',
+      path: '/pets',
+      method: 'get',
+    };
+    const result = enforce(overlay, ctx);
+    expect(result.allowed).toBe(true);
+    expect(result.sensitivity).toBe('internal'); // fallback default
+    expect(result.requiresApproval).toBe(false); // fallback default
+    expect(result.exportVisible).toBe(true); // fallback default
   });
 
   it('applies default sensitivity when no rule overrides it', () => {

@@ -18,6 +18,10 @@ export default defineConfig({
         '**/*.config.*',
         '**/*.d.ts',
         'fixtures/**',
+        // CLI entry point is an executable, not a library -- no unit tests apply
+        'packages/cli/src/index.ts',
+        // vitest workspace config file
+        'vitest.workspace.ts',
       ],
     },
   },

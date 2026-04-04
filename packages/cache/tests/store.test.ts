@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { writeBundle, readBundle, listBundles, cleanCache } from '../src/store.js';
@@ -160,6 +160,42 @@ describe('cache store', () => {
     it('returns 0 when cache is already empty', async () => {
       const removed = await cleanCache({ cacheDir: tmpDir });
       expect(removed).toBe(0);
+    });
+  });
+
+  describe('readBundle without explicit cacheDir (default path)', () => {
+    it('returns null when bundle does not exist in default caches', async () => {
+      // Uses the default local + global search path.
+      // The bundle name is deliberately unique so it will not be found.
+      const result = await readBundle('__specrail_test_nonexistent_bundle_xyz__');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('listBundles without explicit cacheDir (default path)', () => {
+    it('returns an array (may be empty or contain existing bundles)', async () => {
+      const result = await listBundles();
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
+
+  describe('error handling', () => {
+    it('skips bundles with corrupted meta.json', async () => {
+      const bundleDir = join(tmpDir, 'bundles', 'corrupt-bundle');
+      await mkdir(bundleDir, { recursive: true });
+      await writeFile(join(bundleDir, 'meta.json'), 'NOT VALID JSON', 'utf-8');
+
+      const bundles = await listBundles({ cacheDir: tmpDir });
+      expect(bundles).toHaveLength(0);
+    });
+
+    it('skips bundles with corrupted bundle.json when reading', async () => {
+      const bundleDir = join(tmpDir, 'bundles', 'corrupt-bundle');
+      await mkdir(bundleDir, { recursive: true });
+      await writeFile(join(bundleDir, 'bundle.json'), 'NOT VALID JSON', 'utf-8');
+
+      const result = await readBundle('corrupt-bundle', { cacheDir: tmpDir });
+      expect(result).toBeNull();
     });
   });
 });
