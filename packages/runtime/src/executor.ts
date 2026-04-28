@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import type { Capability } from '@specrail/core';
 import { resolveAuth } from './auth.js';
 
@@ -34,6 +37,29 @@ export class PolicyDeniedError extends Error {
   }
 }
 
+function loadQboEnvForDefaults(): void {
+  const file = join(homedir(), '.config', 'openclaw', 'quickbooks.env');
+  if (!existsSync(file)) return;
+  for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
+    if (!line || line.trimStart().startsWith('#') || !line.includes('=')) continue;
+    const [key, ...rest] = line.split('=');
+    if (key && process.env[key] === undefined) process.env[key] = rest.join('=');
+  }
+}
+
+function applyDefaultParams(capability: Capability, options: ExecOptions): ExecOptions {
+  if (options.authEnvPrefix !== 'QBO') return options;
+  loadQboEnvForDefaults();
+  const realmId = process.env.QBO_REALM_ID;
+  if (!realmId) return options;
+  const params = { ...(options.params ?? {}) };
+  if (params.realmId === undefined) params.realmId = realmId;
+  if (capability.operation.path.includes('/companyinfo/{id}') && params.id === undefined) {
+    params.id = realmId;
+  }
+  return { ...options, params };
+}
+
 // Execute a capability directly against the target API.
 //
 // TRUST BOUNDARY: This is the most sensitive function in Specrail.
@@ -44,6 +70,8 @@ export async function execute(
   capability: Capability,
   options: ExecOptions = {},
 ): Promise<ExecResult> {
+  options = applyDefaultParams(capability, options);
+
   // Policy gate: denied operations cannot execute
   if (!capability.policy.allowed) {
     throw new PolicyDeniedError(
