@@ -152,12 +152,47 @@ export async function execute(
   }
 
   // Make the actual HTTP request
-  const response = await fetch(url.toString(), {
-    method: request.method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    signal: AbortSignal.timeout(30_000),
-  });
+  // Node 24 / undici throws TypeError: terminated when a connection is
+  // abruptly closed (TLS reset, server-side drop). This is distinct from
+  // AbortError (timeout). We retry once on terminated, then throw a
+  // descriptive error so callers don't see a raw "terminated" message.
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), {
+      method: request.method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch (err) {
+    const isTerminated =
+      (err instanceof TypeError && err.message.includes('terminated')) ||
+      (err as { cause?: { code?: string } }).cause?.code === 'UND_ERR_ABORTED';
+    const isTimeout = err instanceof DOMException && err.name === 'TimeoutError';
+
+    if (isTerminated) {
+      try {
+        response = await fetch(url.toString(), {
+          method: request.method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+          signal: AbortSignal.timeout(30_000),
+        });
+      } catch {
+        throw new Error(
+          `SpecRail execution failed: connection terminated for ${capability.id} (provider may be unavailable)`,
+          { cause: err },
+        );
+      }
+    } else if (isTimeout) {
+      throw new Error(
+        `SpecRail execution failed: request timed out after 30s for ${capability.id}`,
+        { cause: err },
+      );
+    } else {
+      throw err;
+    }
+  }
 
   const responseHeaders: Record<string, string> = {};
   response.headers.forEach((value, key) => {

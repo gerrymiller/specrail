@@ -431,3 +431,54 @@ describe('execute (with mocked fetch)', () => {
     expect((init.headers as Record<string, string>)['X-Trace-Id']).toBe('trace-abc');
   });
 });
+
+describe('execute (connection terminated handling)', () => {
+  it('retries once on TypeError: terminated and succeeds on second attempt', async () => {
+    const terminatedError = new TypeError('terminated');
+    const mockResponse = makeFetchResponse({
+      status: 200,
+      contentType: 'application/json',
+      json: { recovered: true },
+    });
+    const fetchSpy = vi
+      .fn<unknown, Parameters<typeof fetch>>()
+      .mockRejectedValueOnce(terminatedError)
+      .mockResolvedValueOnce(mockResponse);
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const cap = makeCapability();
+    const result = await execute(cap);
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual({ recovered: true });
+  });
+
+  it('throws descriptive error when retry also terminates', async () => {
+    const terminatedError = new TypeError('terminated');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(terminatedError));
+
+    const cap = makeCapability();
+    await expect(execute(cap)).rejects.toThrow(
+      'SpecRail execution failed: connection terminated for petstore:listPets',
+    );
+  });
+
+  it('throws descriptive error on timeout (AbortError)', async () => {
+    const timeoutError = new DOMException('The operation timed out', 'TimeoutError');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(timeoutError));
+
+    const cap = makeCapability();
+    await expect(execute(cap)).rejects.toThrow(
+      'SpecRail execution failed: request timed out after 30s for petstore:listPets',
+    );
+  });
+
+  it('rethrows non-terminated, non-timeout errors as-is', async () => {
+    const networkError = new Error('ECONNREFUSED');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(networkError));
+
+    const cap = makeCapability();
+    await expect(execute(cap)).rejects.toThrow('ECONNREFUSED');
+  });
+});
